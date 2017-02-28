@@ -199,80 +199,33 @@ def build_model(W = None, # word embeddings
     # print 'output:', get_output_shape(l_fwd, HYPOTHETICALLY)
 
     # add droput
-    #l_fwd = lasagne.layers.DropoutLayer(l_fwd, p=0.5)
+#    l_fwd = lasagne.layers.DropoutLayer(l_fwd, p=0.5)
+#
+#    gate_params_bwd = lasagne.layers.recurrent.Gate(
+#        W_in=lasagne.init.Orthogonal(), W_hid=lasagne.init.Orthogonal(),
+#        b=lasagne.init.Constant(0.)
+#    )
+#    cell_params_bwd = lasagne.layers.recurrent.Gate(
+#        W_in=lasagne.init.Orthogonal(), W_hid=lasagne.init.Orthogonal(),
+#        W_cell=None, b=lasagne.init.Constant(0.),
+#        nonlinearity=lasagne.nonlinearities.tanh
+#    )
+#    l_bwd = lasagne.layers.LSTMLayer(
+#             l_emb, num_units=num_hidden, grad_clipping=grad_clip,
+#             nonlinearity=lasagne.nonlinearities.tanh, mask_input=l_mask,
+#             ingate=gate_params_bwd, forgetgate=gate_params_bwd, cell=cell_params_bwd,
+#             outgate=gate_params_bwd, learn_init=True,
+#             backwards=True
+#    )
+#    l_bwd = lasagne.layers.DropoutLayer(l_bwd,p=0.5)
+#
+#    # concat and dropout
+#    l_concat = lasagne.layers.ConcatLayer([l_fwd, l_bwd])
+#    l_concat = lasagne.layers.DropoutLayer(l_concat,p=0.5)
 
-    # if bidirectional:
-    #     # add a backwards LSTM layer for bi-directional
-    #     l_bwd = lasagne.layers.LSTMLayer(
-    #         l_emb, num_units=num_hidden, grad_clipping=grad_clip,
-    #         nonlinearity=lasagne.nonlinearities.tanh, mask_input=l_mask,
-    #         ingate=gate_params, forgetgate=gate_params, cell=cell_params,
-    #         outgate=gate_params, learn_init=True,
-    #         backwards=True
-    #     )
-    #     print('Backward LSTM Shape:')
-    #     print 'input:', get_output_shape(l_emb, HYPOTHETICALLY)
-    #     print 'output:', get_output_shape(l_bwd, HYPOTHETICALLY)
-    #     print
 
-    #     # print "backward layer:", lasagne.layers.get_output_shape(
-    #     #     l_bwd, {l_in: (200, 140), l_mask: (200, 140)})
-
-    #     # concatenate forward and backward LSTM
-    #     l_concat = lasagne.layers.ConcatLayer([l_fwd, l_bwd])
-    #     print('Concat Layer Shape:')
-    #     print 'input:', get_output_shape(l_fwd, HYPOTHETICALLY), get_output_shape(l_bwd, HYPOTHETICALLY)
-    #     print 'output:', get_output_shape(l_concat, HYPOTHETICALLY)
-    #     print
-    # else:
-    #     l_concat = l_fwd
-    #     print('Concat Layer Shape:')
-    #     print 'input:', get_output_shape(l_fwd, HYPOTHETICALLY)
-    #     print 'output:', get_output_shape(l_concat, HYPOTHETICALLY)
-    #     print
-
-    # add droput
-    l_concat = lasagne.layers.DropoutLayer(l_fwd, p=0.5)
-    #l_pool = l_concat
-    l_lstm2 = lasagne.layers.LSTMLayer(
-        l_concat,
-        num_units=num_hidden,
-        grad_clipping=grad_clip,
-        nonlinearity=lasagne.nonlinearities.tanh,
-        mask_input=l_mask,
-        ingate=gate_params,
-        forgetgate=gate_params,
-        cell=cell_params,
-        outgate=gate_params,
-        learn_init=True,
-        only_return_final=True
-    )
-
-    # print('LSTM Layer #2 Shape:')
-    # print 'input:', get_output_shape(l_concat, HYPOTHETICALLY)
-    # print 'output:', get_output_shape(l_lstm2, HYPOTHETICALLY)
-    # print
-
-    # add dropout
-    l_lstm2 = lasagne.layers.DropoutLayer(l_lstm2, p=0.6)
-
-    #Mean Pooling Layer
-
-    # Check pool_size ? 
-    # pool_size = 2
-    # l_pool = lasagne.layers.FeaturePoolLayer(l_concat, pool_size)
-    # with GlobalPoolLayer you don't need to check input shape
-    #l_pool  = lasagne.layers.GlobalPoolLayer(l_lstm2)
-
-    # print('Mean Pool Layer Shape:')
-    # print 'input:', get_output_shape(l_lstm2, HYPOTHETICALLY)
-    # print 'output:', get_output_shape(l_pool, HYPOTHETICALLY)
-    # print
-
-    # Dense Layer
-    l_pool = l_lstm2
     network = lasagne.layers.DenseLayer(
-        l_pool,
+        l_fwd,
         num_units=num_classes,
         nonlinearity=lasagne.nonlinearities.softmax
     )
@@ -463,7 +416,7 @@ def train_test_model(target, path, hidden_units, both, top, batch_size,num_epoch
     print('... training')
 
     # early-stopping parameters
-    patience = 10000  # look as this many examples regardless
+    patience = 1000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
                            # found
     improvement_threshold = 0.995  # a relative improvement of this much is
@@ -492,7 +445,7 @@ def train_test_model(target, path, hidden_units, both, top, batch_size,num_epoch
         for minibatch_index in range(n_train_batches):
 
             minibatch_avg_cost = train_model(minibatch_index)
-            print("the minibatch cost from training on batch {} is: {}".format(minibatch_index,minibatch_avg_cost))
+            print("training on batch {}".format(minibatch_index))
             # iteration number
             iter = (epoch - 1) * n_train_batches + minibatch_index
 
@@ -507,29 +460,26 @@ def train_test_model(target, path, hidden_units, both, top, batch_size,num_epoch
 		print("this is the current validation lost {}".format(this_validation_loss))
 		print("this is the current validation accuracy {}".format(this_validation_accuracy))
                 
-                log_file.write(
-                       "epoch {}, validation accuracy:  {}".format( epoch,this_validation_accuracy *1.0 )
-                    )
-
                 # if we got the best validation score until now
                 if this_validation_accuracy > best_validation_accuracy:
                     #improve patience if loss improvement is good enough
                     if (
-                        this_validation_accuracy > best_validation_accuracy *
+                        this_validation_accuracy < best_validation_accuracy *
                         improvement_threshold
                     ):
                         patience = max(patience, iter * patience_increase)
 
-                    best_validation_accuracy = this_validation_accuracy
+		    best_validation_accuracy = this_validation_accuracy
+
                     best_iter = iter
-                    write_model_data(network, log_path + '/best_lstm_model')
+                    write_model_data(network, log_path + '/best_lstm_model_' + target)
 
                     # test it on the test set
                     test_accuracies = [test_model(i) for i
                                    in range(n_test_batches)]
                     test_score = np.mean(test_accuracies)
 		    print("the current test score for the best validation set accuracy is: {}".format(test_score))
-                    log_file.write("\t  test accuracy:\t\t{}\n".format(test_score))
+                    print("\t  test accuracy:\t\t{}\n".format(test_score))
 
             if patience <= iter:
                 done_looping = True
@@ -540,9 +490,62 @@ def train_test_model(target, path, hidden_units, both, top, batch_size,num_epoch
 	
 
     end_time = timeit.default_timer()
-    log_file.write("the code ran for {} ".format(((end_time-start_time)/60)))
-    return [best_validation_accuracy * 100., best_iter +1, test_score*100.]
-
+    print("the code ran for {} ".format(((end_time-start_time)/60)))
+    print("Optimization finished: the best validation accuracy of {} achieved at {} with a test_accuracy of {}".format(best_validation_accuracy, best_iter, test_score))
+    return [best_validation_accuracy, best_iter +1, test_score*100.]
+#        for batch in iterate_minibatches(X_train,X_train_mask, y_train,
+#                                         batch_size, shuffle=True):
+#            x_mini,x_mini_mask, y_mini = batch
+#            # print x_train.shape, y_train.shape
+#            train_err += train(x_mini, x_mini_mask, y_mini)
+#            train_batches += 1
+#            # print "Batch {} : cost {:.6f}".format(
+#            #     train_batches, train_err / train_batches)
+#
+#            if train_batches % batch_size == 0:
+#                log_file.write("\tBatch {} of epoch {} took {:.3f}s\n".format(
+#                    train_batches, epoch+1, time.time() - start_time))
+#
+#                val_loss, val_acc = compute_val_error(X_val=X_val,X_val_mask= X_val_mask, y_val=y_val)
+#
+#                if val_acc >= best_val_acc:
+#                    best_val_acc = val_acc
+#                    write_model_data(network, log_path + '/best_lstm_model')
+#
+#                log_file.write(
+#                    "\tCurrent best validation accuracy:\t\t{:.2f}\n".format(
+#                        best_val_acc * 100.))
+#                log_file.flush()
+#
+#        disp_msg = "Epoch {} of {} took {:.3f}s\n".format(epoch + 1, num_epochs, time.time() - start_time)
+#        print disp_msg
+#        log_file.write(disp_msg)
+#        log_file.write("\t  training loss:\t\t{:.6f}\n".format(
+#            train_err / train_batches))
+#        val_loss, val_acc = compute_val_error(X_val=X_val,X_val_mask = X_val_mask, y_val=y_val)
+#        if val_acc >= best_val_acc:
+#            best_val_acc = val_acc
+#            write_model_data(network, log_path + '/best_lstm_model')
+#
+#        log_file.write("Current best validation accuracy:\t\t{:.2f}\n".format(
+#            best_val_acc * 100.))
+#
+#        if (epoch) % 1 == 0:
+#            test_loss, test_acc, _ = val_fn(X_test,X_test_mask, y_test)
+#            log_file.write("Test accuracy:\t\t{:.2f}\n".format(test_acc * 100.))
+#
+#        log_file.flush()
+#
+#    log_file.write("Training took {:.3f}s\n".format(time.time() - begin_time))
+#
+#    network = read_model_data(network, log_path + '/best_lstm_model')
+#    test_loss, test_acc, _ = val_fn(X_test, X_test_mask, y_test)
+#    log_file.write("Best Model Test accuracy:\t\t{:.2f}%\n".format(test_acc * 100.))
+#
+#    log_file.close()
+#
+#    return network
+#
 def str_to_bool(s):
     if s == 'True':
          return True

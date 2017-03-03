@@ -10,4 +10,7 @@ class PreProcessor:
 	self.output = config.get(header, "output")
 	self.both = config.get(header,"both")
 	self.topSim  = config.get(header,"topSim")
+        self.separate = config.get(header,"separate")
 	self.w2v_file = config.get(header,"w2v_file")
+        self.w2v_type = config.get(header,"w2v_type")
+        

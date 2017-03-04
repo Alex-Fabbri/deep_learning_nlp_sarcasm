@@ -28,14 +28,13 @@ hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
 logger.setLevel(logging.WARNING)
 
-class Sarcasm_Lstm:
+class SarcasmLstm:
     def __init__(self, 
                 W=None, 
                 K=300, 
                 num_hidden=256,
                 batch_size=None,
                 bidirectional=False, 
-                mean_pooling=False, 
                 grad_clip=100., 
                 max_seq_len=200, 
                 num_classes=2):

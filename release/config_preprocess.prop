@@ -1,6 +1,0 @@
-[PropertySection]
-input=input/
-output=output/
-both=False
-topSim=False
-w2v_file=../GoogleNews-vectors-negative300.bin

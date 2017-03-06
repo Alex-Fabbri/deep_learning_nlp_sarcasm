@@ -40,6 +40,16 @@ class SarcasmLstm:
                 max_seq_len=200, 
                 num_classes=2):
 
+        W = W
+        V = len(W)
+        print(V)
+        max_seq_len = 198 
+        batch_size = 16
+        num_hidden = 256
+        K = 300
+        num_classes = 2
+        grad_clip = 100
+
         index = T.lscalar() 
         X = T.imatrix('X')
         M = T.imatrix('M')
@@ -49,8 +59,6 @@ class SarcasmLstm:
         l_mask = lasagne.layers.InputLayer((batch_size, max_seq_len), input_var=M)
 
     
-        W = W
-        V = len(W)
     
         # Embedding layer
         l_emb = lasagne.layers.EmbeddingLayer(l_in, input_size=V, output_size=K, W=W)
@@ -109,6 +117,7 @@ class SarcasmLstm:
         #print(y_train)
         # Compile train objective
         print "Compiling training functions"
+        self.train = theano.function(inputs = [X,M,y], outputs = cost, updates = grad_updates, allow_input_downcast=True)
         #self.train_model = theano.function(
         #    inputs=[index],
         #    outputs=cost,

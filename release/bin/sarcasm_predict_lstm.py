@@ -1,3 +1,4 @@
+# structure based off of https://github.com/chridey/cmv/blob/master/cmv/bin/cmv_predict_rnn.py
 import sys
 from release.lstm.SarcasmClassifier import SarcasmClassifier
 from release.preprocessing.load_data import load_data
@@ -10,10 +11,9 @@ if __name__ == "__main__":
     taget = ["one"]
     for target in targets:
         print("working on target: {}\n".format(target))
-        training, y, validation, val_y, kwargs = load_data(target, sys.argv[1])
+        training, y, testing, test_y, kwargs = load_data(target, sys.argv[1])
         classifier = SarcasmClassifier(**kwargs)
-        X, X_heldout, y, y_heldout = train_test_split(training, y, test_size = .9)
-        #classifier.fit(training, y)
+        classifier.fit(training, y)
         #classifier.save('{}.{}.{}'.format(outputfile, recurrent_dimension, target))
-        #scores = classifier.decision_function(validation, val_y)
+        #scores = classifier.decision_function(testing, test_y)
         #np.save('{}.{}.{}.scores'.format(outputfile, recurrent_dimension, target))

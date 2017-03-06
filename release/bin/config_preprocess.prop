@@ -6,3 +6,6 @@ topSim=False
 separate=False
 w2v_file=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_learning_tests_spring2017/lasagne/GoogleNews-vectors-negative300.bin
 w2v_type=bin
+num_hidden=256
+batch_size=16
+num_epochs=1000

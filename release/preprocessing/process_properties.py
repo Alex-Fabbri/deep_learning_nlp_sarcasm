@@ -2,7 +2,7 @@ import sys
 import ConfigParser
 
 class PreProcessor:
-    def __init__(self, config_file):
+    def __init__(self,config_file):
 	config = ConfigParser.RawConfigParser()
 	config.read(config_file)
         try:
@@ -14,7 +14,9 @@ class PreProcessor:
             self.separate = config.get(header,"separate")
 	    self.w2v_file = config.get(header,"w2v_file")
             self.w2v_type = config.get(header,"w2v_type")
+            self.num_hidden = config.get(header,"num_hidden")
+            self.batch_size = config.get(header,"batch_size")
+            self.num_epochs = config.get(header,"num_epochs")
         except:
-            print("make sure to include all parameters")
+            print("check the parameters that you entered in the config file")
             exit()
-        

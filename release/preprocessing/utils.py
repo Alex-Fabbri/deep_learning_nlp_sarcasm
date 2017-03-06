@@ -110,12 +110,16 @@ def process_line(line):
 
 
 def str_to_bool(s):
-    if s == 'True':
-         return True
-    elif s == 'False':
-         return False
+    if(type(s) is not bool):
+        if s == 'True':
+             return True
+        elif s == 'False':
+             return False
+        else:
+             print("{} has this type: {}".format(s, type(s)))
+             raise ValueError
     else:
-         raise ValueError # evil ValueError that doesn't tell you what the wrong value was
+        return s
 
 """
 for input file, assume 1st column is label (int), and 2nd column is query (string)

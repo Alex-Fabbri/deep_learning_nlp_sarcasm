@@ -31,6 +31,7 @@ logger.setLevel(logging.WARNING)
 class SarcasmLstm:
     def __init__(self, 
                 W=None, 
+                W_path=None, 
                 K=300, 
                 num_hidden=256,
                 batch_size=None,
@@ -43,11 +44,13 @@ class SarcasmLstm:
         X = T.imatrix('X')
         M = T.imatrix('M')
         y = T.ivector('y')
-        V = len(W)
         # Input Layer
         l_in = lasagne.layers.InputLayer((batch_size, max_seq_len), input_var=X)
         l_mask = lasagne.layers.InputLayer((batch_size, max_seq_len), input_var=M)
+
     
+        W = W
+        V = len(W)
     
         # Embedding layer
         l_emb = lasagne.layers.EmbeddingLayer(l_in, input_size=V, output_size=K, W=W)
@@ -106,39 +109,39 @@ class SarcasmLstm:
         #print(y_train)
         # Compile train objective
         print "Compiling training functions"
-        self.train_model = theano.function(
-            inputs=[index],
-            outputs=cost,
-            updates=grad_updates,
-            givens={
-                X: train_set_x[index * batch_size: (index + 1) * batch_size],
-                M: train_set_x_mask[index * batch_size: (index +1) * batch_size],
-                y: train_set_y[index * batch_size: (index + 1) * batch_size]
-            }
-        )
-        self.validate_model = theano.function(
-            inputs=[index],
-            outputs=[val_cost_fn, val_acc_fn],
-            givens={
-                X: valid_set_x[index * batch_size:(index + 1) * batch_size],
-                M: valid_set_x_mask[index * batch_size: (index +1) * batch_size],
-                y: valid_set_y[index * batch_size:(index + 1) * batch_size]
-            }
-        )
-        self.test_model = theano.function(
-            inputs=[index],
-            outputs=[val_acc_fn],
-            givens={
-                X: test_set_x[index * batch_size:(index + 1) * batch_size],
-                M: test_set_x_mask[index * batch_size: (index +1) * batch_size],
-                y: test_set_y[index * batch_size:(index + 1) * batch_size]
-            }
-        )
+        #self.train_model = theano.function(
+        #    inputs=[index],
+        #    outputs=cost,
+        #    updates=grad_updates,
+        #    givens={
+        #        X: train_set_x[index * batch_size: (index + 1) * batch_size],
+        #        M: train_set_x_mask[index * batch_size: (index +1) * batch_size],
+        #        y: train_set_y[index * batch_size: (index + 1) * batch_size]
+        #    }
+        #)
+        #self.validate_model = theano.function(
+        #    inputs=[index],
+        #    outputs=[val_cost_fn, val_acc_fn],
+        #    givens={
+        #        X: valid_set_x[index * batch_size:(index + 1) * batch_size],
+        #        M: valid_set_x_mask[index * batch_size: (index +1) * batch_size],
+        #        y: valid_set_y[index * batch_size:(index + 1) * batch_size]
+        #    }
+        #)
+        #self.test_model = theano.function(
+        #    inputs=[index],
+        #    outputs=[val_acc_fn],
+        #    givens={
+        #        X: test_set_x[index * batch_size:(index + 1) * batch_size],
+        #        M: test_set_x_mask[index * batch_size: (index +1) * batch_size],
+        #        y: test_set_y[index * batch_size:(index + 1) * batch_size]
+        #    }
+        #)
 
     def get_params(self):
         return lasagne.layers.get_all_param_values(self.network)
 
-    def set_params(self, params);
+    def set_params(self, params):
         lasagne.layers.set_all_param_values(self.network, params)
 
     def save(self, filename):

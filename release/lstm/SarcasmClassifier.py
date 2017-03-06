@@ -54,7 +54,7 @@ class SarcasmClassifier(BaseEstimator):
         self.num_classes = int(num_classes)
         self.num_epochs = int(num_epochs)
         self.batch_size = int(batch_size)
-        self.classifier = SarcasmLstm(W=W) 
+        self.classifier = SarcasmLstm(W=W,batch_size=self.batch_size,max_seq_len=self.max_seq_len) 
 
 
     def fit(self, X, y):

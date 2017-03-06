@@ -42,13 +42,13 @@ class SarcasmLstm:
 
         W = W
         V = len(W)
-        print(V)
-        max_seq_len = 198 
-        batch_size = 16
-        num_hidden = 256
-        K = 300
-        num_classes = 2
-        grad_clip = 100
+        #print(V)
+        #max_seq_len = 198 
+        #batch_size = 16
+        #num_hidden = 256
+        #K = 300
+        #num_classes = 2
+        #grad_clip = 100
 
         index = T.lscalar() 
         X = T.imatrix('X')

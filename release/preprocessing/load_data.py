@@ -56,6 +56,7 @@ def load_data(target,config_file):
     #print(word_idx_map)
     X_train_indx, y_train = text_to_indx(train_data, word_idx_map)
     X_train, X_train_mask = pad_mask(X_train_indx, max_l)
+    return_dict["max_seq_len"] = max_l
 
     # print(X_train_indx[0])
     # print(len(X_train_indx[0]))

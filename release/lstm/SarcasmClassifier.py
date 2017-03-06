@@ -97,7 +97,7 @@ class SarcasmClassifier(BaseEstimator):
                 #y_current = y[idxs[s:e]]
                 cost = self.classifier.train(X_current, X_current_mask, y_current)
                 print(epoch, batch_num, cost)
-                #epoch_cost += cost
+                epoch_cost += cost
 
         #    if early_stopping_heldout:
         #        scores = self.decision_function(zip(zip(*X_heldout)[:-1]))
@@ -111,13 +111,13 @@ class SarcasmClassifier(BaseEstimator):
         #     print(epoch_cost)
 
         #if best > 0:
-        #    self.classifier.set_params(best_params)
+        self.classifier.set_params(best_params)
 
         return self
 
-    def predict(self, X):
-        scores = self.decision_function(X)
-        return scores > .5
+    def predict(self, X, M):
+        preds = self.classifier.pred(X,M)
+        return preds
     
     def decision_function(self, X):
         inputs = zip(*X)

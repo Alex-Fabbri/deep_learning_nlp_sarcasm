@@ -118,6 +118,8 @@ class SarcasmLstm:
         # Compile train objective
         print "Compiling training functions"
         self.train = theano.function(inputs = [X,M,y], outputs = cost, updates = grad_updates, allow_input_downcast=True)
+        self.test = theano.function(inputs = [X,M,y], outputs = val_acc_fn)
+        self.pred = theano.function(inputs = [X,M],outputs = preds)
         #self.train_model = theano.function(
         #    inputs=[index],
         #    outputs=cost,

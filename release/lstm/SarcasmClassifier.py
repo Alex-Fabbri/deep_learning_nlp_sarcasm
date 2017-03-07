@@ -79,7 +79,7 @@ class SarcasmClassifier(BaseEstimator):
             idxs = np.random.choice(X.shape[0], X.shape[0], False)
             #print('Unique', len(set(idxs)))
                 
-            for batch_num in range(num_batches+1):
+            for batch_num in range(num_batches):
                 s = self.batch_size * batch_num
                 e = self.batch_size * (batch_num+1)
 
@@ -111,6 +111,7 @@ class SarcasmClassifier(BaseEstimator):
         #     print(epoch_cost)
 
         #if best > 0:
+        best_params = self.classifier.get_params()
         self.classifier.set_params(best_params)
 
         return self

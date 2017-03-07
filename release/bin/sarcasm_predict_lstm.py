@@ -3,6 +3,7 @@ import sys
 from release.lstm.SarcasmClassifier import SarcasmClassifier
 from release.preprocessing.load_data import load_data
 from sklearn.model_selection import train_test_split
+import numpy as np
 
 
 if __name__ == "__main__":
@@ -14,6 +15,6 @@ if __name__ == "__main__":
         training, y, testing, test_y, kwargs = load_data(target, sys.argv[1])
         classifier = SarcasmClassifier(**kwargs)
         classifier.fit(training, y)
-        classifier.save('{}.classifier.{}'.format(kwargs["output"], target))
+        classifier.save('{}_classifier_{}'.format(kwargs["output"], target))
         preds,scores = classifier.test(testing, test_y)
-        np.save('{}.classifier.{}.preds'.format(kwargs["output"],target), preds)
+        np.save('{}_classifier_{}_preds'.format(kwargs["output"],target), preds)

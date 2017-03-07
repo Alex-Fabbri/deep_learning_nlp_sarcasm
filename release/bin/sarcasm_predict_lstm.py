@@ -9,7 +9,6 @@ import numpy as np
 if __name__ == "__main__":
 
     targets = ["one", "two", "three", "four", "five"]
-    taget = ["one"]
     for target in targets:
         print("working on target: {}\n".format(target))
         training, y, testing, test_y, kwargs = load_data(target, sys.argv[1])

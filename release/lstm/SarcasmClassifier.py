@@ -21,7 +21,7 @@ from sklearn.base import BaseEstimator
 from release.lstm.SarcasmLstm import SarcasmLstm
 from release.preprocessing.utils import str_to_bool 
 from sklearn.model_selection import train_test_split
-
+from sklearn.metrics import precision_recall_fscore_support as score
 
 
 
@@ -119,6 +119,14 @@ class SarcasmClassifier(BaseEstimator):
         preds = self.classifier.pred(X,M)
         return preds
     
+    def test(self, X, y):
+        data = zip(*X)
+        X1 = data[0]
+        X1_mask = data[1]
+        preds = self.classifier.pred(X1,X1_mask)
+        precision, recall, fscore, support = score(y, preds)
+        return preds,[precision, recall, fscore] 
+
     def decision_function(self, X):
         inputs = zip(*X)
         scores = self.classifier.predict(*inputs)

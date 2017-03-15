@@ -16,4 +16,9 @@ if __name__ == "__main__":
         classifier.fit(training, y)
         classifier.save('{}_classifier_{}'.format(kwargs["output"], target))
         preds,scores = classifier.test(testing, test_y)
+        precision, recall, fscore = scores[0], scores[1], scores[2]
+        print(precision) 
+        print(recall)
+        print(fscore)
         np.save('{}_classifier_{}_preds'.format(kwargs["output"],target), preds)
+        print("finished target: {}\n".format(target))

@@ -22,6 +22,7 @@ from release.lstm.SarcasmLstm import SarcasmLstm
 from release.preprocessing.utils import str_to_bool 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support as score
+from datetime import datetime
 
 
 
@@ -40,11 +41,8 @@ class SarcasmClassifier(BaseEstimator):
             num_classes=2, 
             num_epochs = 25, 
             **kwargs):
-            #):
-           # **kwargs):
             
 
-        #self.W = W
         self.W = W
         self.K = int(K)
         self.num_hidden = int(num_hidden)
@@ -59,79 +57,63 @@ class SarcasmClassifier(BaseEstimator):
 
     def fit(self, X, y):
 
-        early_stopping_heldout = .9
-        if early_stopping_heldout:
-            X, X_heldout, y, y_heldout = train_test_split(X,
-                                                          y,
-                                                          train_size=early_stopping_heldout,
-                                                          )
-            print('Train Fold: {} Heldout: {}'.format(collections.Counter(y), collections.Counter(y_heldout)))
+        time_stamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        log_file = "logs/log_file_{}".format(time_stamp)
+        log_file = open(log_file, "w+")
 
-        data = zip(*X)
-        X = np.array(data[0])
-        num_batches = X.shape[0] // self.batch_size
+        early_stopping_heldout = .9
+        X, X_heldout, y, y_heldout = train_test_split(X,y, train_size=early_stopping_heldout, random_state = 123)
+
+
+        #data = zip(*X)
+        # data = tuples
+        num_batches = len(X) // self.batch_size
         best = 0
-        training = np.array(zip(*data))
+        #training = np.array(zip(*data))
+        #training = X
+        #print(training[:,0,:].shape)
         
         for epoch in range(self.num_epochs):
+            print("Epoch: {}\n".format(epoch))
             epoch_cost = 0
 
-            idxs = np.random.choice(X.shape[0], X.shape[0], False)
+            idxs = np.random.choice(len(X), len(X), False)
             #print('Unique', len(set(idxs)))
                 
             for batch_num in range(num_batches):
+                print(batch_num)
                 s = self.batch_size * batch_num
                 e = self.batch_size * (batch_num+1)
 
-                batch = training[idxs[s:e]]
-                inputs = zip(*batch)
+                batch = X[idxs[s:e]]
+                #inputs = zip(*batch)
+                inputs = np.array(zip(*batch))
 
-                X_current = np.array(inputs[0])
-                X_current_mask = np.array(inputs[1])
+                #X_current = np.array(inputs[0])
+                #X_current_mask = np.array(inputs[1])
                 y_current = y[idxs[s:e]]
 
-                #print(X_current.shape)
-                #print(X_current_mask.shape)
-                #print(y_current.shape)
-
-                #y_current = y[idxs[s:e]]
-                cost = self.classifier.train(X_current, X_current_mask, y_current)
-                print(epoch, batch_num, cost)
+                #cost = self.classifier.train(X_current, X_current_mask, y_current)
+                cost = self.classifier.train(*inputs, y=y_current)
+                log_file.write("Epoch: {}, batch_num: {}, cost: {}\n".format(epoch, batch_num, cost))
+                log_file.flush()
                 epoch_cost += cost
+                
 
-        #    if early_stopping_heldout:
-        #        scores = self.decision_function(zip(zip(*X_heldout)[:-1]))
-        #        auc_score = roc_auc_score(zip(*X_heldout)[:-1], scores)
-        #        if self.verbose:
-        #            print('{} ROC AUC: {}'.format(outputfile, auc_score))
-        #        if auc_score > best:
-        #            best = auc_score
-        #            best_params = self.classifier.get_params()
-
-        #     print(epoch_cost)
-
-        #if best > 0:
         best_params = self.classifier.get_params()
         self.classifier.set_params(best_params)
 
+        log_file.close()
         return self
 
-    def predict(self, X, M):
-        preds = self.classifier.pred(X,M)
-        return preds
     
     def test(self, X, y):
-        data = zip(*X)
-        X1 = data[0]
-        X1_mask = data[1]
-        preds = self.classifier.pred(X1,X1_mask)
+        inputs = np.array(zip(*X))
+        #X1 = data[0]
+        #X1_mask = data[1]
+        preds = self.classifier.pred(*inputs)
         precision, recall, fscore, support = score(y, preds)
         return preds,[precision, recall, fscore] 
-
-    def decision_function(self, X):
-        inputs = zip(*X)
-        scores = self.classifier.predict(*inputs)
-        return scores
 
     def save(self, outfilename):
         self.classifier.save(outfilename)

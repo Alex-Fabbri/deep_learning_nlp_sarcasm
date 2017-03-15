@@ -19,14 +19,6 @@ import lasagne
 from lasagne.layers import get_output_shape
 
 
-warnings.filterwarnings("ignore")   
-
-logger = logging.getLogger('myapp')
-hdlr = logging.FileHandler('log_all')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr) 
-logger.setLevel(logging.WARNING)
 
 class SarcasmLstm:
     def __init__(self, 
@@ -42,13 +34,6 @@ class SarcasmLstm:
 
         W = W
         V = len(W)
-        #print(V)
-        #max_seq_len = 198 
-        #batch_size = 16
-        #num_hidden = 256
-        #K = 300
-        #num_classes = 2
-        #grad_clip = 100
 
         index = T.lscalar() 
         X = T.imatrix('X')
@@ -102,7 +87,6 @@ class SarcasmLstm:
         grad_updates = lasagne.updates.adam(cost, params)
         #learn_rate = .01
         #grad_updates = lasagne.updates.adadelta(cost, params, learn_rate)
-        log_path = "logs/"
         test_output = lasagne.layers.get_output(network, deterministic=True)
         val_cost_fn = lasagne.objectives.categorical_crossentropy(
             test_output, y).mean()
@@ -112,42 +96,12 @@ class SarcasmLstm:
                             dtype=theano.config.floatX)
         val_fn = theano.function([X, M, y], [val_cost_fn, val_acc_fn, preds],
                                  allow_input_downcast=True)
-        log_file = open(log_path + "training_log_" +
-                        time.strftime('%m%d%Y_%H%M%S'), "w+")
         #print(y_train)
         # Compile train objective
         print "Compiling training functions"
         self.train = theano.function(inputs = [X,M,y], outputs = cost, updates = grad_updates, allow_input_downcast=True)
         self.test = theano.function(inputs = [X,M,y], outputs = val_acc_fn)
         self.pred = theano.function(inputs = [X,M],outputs = preds)
-        #self.train_model = theano.function(
-        #    inputs=[index],
-        #    outputs=cost,
-        #    updates=grad_updates,
-        #    givens={
-        #        X: train_set_x[index * batch_size: (index + 1) * batch_size],
-        #        M: train_set_x_mask[index * batch_size: (index +1) * batch_size],
-        #        y: train_set_y[index * batch_size: (index + 1) * batch_size]
-        #    }
-        #)
-        #self.validate_model = theano.function(
-        #    inputs=[index],
-        #    outputs=[val_cost_fn, val_acc_fn],
-        #    givens={
-        #        X: valid_set_x[index * batch_size:(index + 1) * batch_size],
-        #        M: valid_set_x_mask[index * batch_size: (index +1) * batch_size],
-        #        y: valid_set_y[index * batch_size:(index + 1) * batch_size]
-        #    }
-        #)
-        #self.test_model = theano.function(
-        #    inputs=[index],
-        #    outputs=[val_acc_fn],
-        #    givens={
-        #        X: test_set_x[index * batch_size:(index + 1) * batch_size],
-        #        M: test_set_x_mask[index * batch_size: (index +1) * batch_size],
-        #        y: test_set_y[index * batch_size:(index + 1) * batch_size]
-        #    }
-        #)
 
     def get_params(self):
         return lasagne.layers.get_all_param_values(self.network)
@@ -158,4 +112,3 @@ class SarcasmLstm:
     def save(self, filename):
         params = self.get_params()
         np.savez_compressed(filename, *params)
-

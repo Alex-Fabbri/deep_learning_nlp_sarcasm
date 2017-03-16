@@ -101,14 +101,10 @@ class SarcasmClassifier(BaseEstimator):
             for batch_num in range(n_train_batches):
 
                 print(batch_num)
-                # TODO add training
                 s = self.batch_size * batch_num
                 e = self.batch_size * (batch_num+1)
                 batch_idxs = idxs[s:e]
                 X_batch, y_batch = get_batch(X, y, batch_idxs) 
-                #print(type(X_batch))
-                #print(type(X_batch[0]))
-                #print(type(y_batch))
                 cost = self.classifier.train(*X_batch, y=y_batch)
                 log_file.write("batch num: {}, cost: {}\n".format(batch_num, cost))
                 
@@ -116,18 +112,13 @@ class SarcasmClassifier(BaseEstimator):
             
 
 
-                #minibatch_avg_cost = train_model(minibatch_index)
-                #print("training on batch {}".format(minibatch_index))
                 # iteration number
                 iter = (epoch - 1) * n_train_batches + batch_num
 
-                #if (iter + 1) % validation_frequency == 0:
-                if (batch_num == 1):
+                if (iter + 1) % validation_frequency == 0:
                     print("time to check validation! ")
                     log_file.write("time to check validation! ")
                     this_validation_cost, this_validation_accuracy,_ = self.classifier.val_fn(*X_heldout, y=y_heldout)
-            	    #print("this is the current validation lost {}".format(this_validation_cost))
-            	    #print("this is the current validation accuracy {}".format(this_validation_accuracy))
             	    log_file.write("this is the current validation lost {}".format(this_validation_cost))
             	    log_file.write("this is the current validation accuracy {}".format(this_validation_accuracy))
                     
@@ -145,7 +136,6 @@ class SarcasmClassifier(BaseEstimator):
                         best_iter = iter
                         best_params = self.classifier.get_params()
 
-                    break
                 log_file.flush()
                         
 
@@ -158,7 +148,6 @@ class SarcasmClassifier(BaseEstimator):
             print("Total time for epoch: " + str(total_time))
 
         
-        # TODO set best params
         log_file.flush()
         log_file.close()
         self.classifier.set_params(best_params)

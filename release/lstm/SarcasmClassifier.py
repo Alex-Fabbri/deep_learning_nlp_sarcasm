@@ -21,6 +21,7 @@ from sklearn.base import BaseEstimator
 from release.lstm.SarcasmLstm import SarcasmLstm
 from release.preprocessing.utils import str_to_bool 
 from release.preprocessing.load_data import split_train_test
+from release.preprocessing.load_data import get_batch
 from sklearn.metrics import precision_recall_fscore_support as score
 from datetime import datetime
 
@@ -57,59 +58,119 @@ class SarcasmClassifier(BaseEstimator):
 
     def fit(self, X, y):
 
+        print("starting training")
         time_stamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         log_file = "logs/log_file_{}".format(time_stamp)
         log_file = open(log_file, "w+")
 
-        #print(X[0].eval().shape)
-
         early_stopping_heldout = .9
         X, X_heldout, y, y_heldout = split_train_test(X, y, train_size=early_stopping_heldout, random_state=123)
-
-        #print(X[0].eval().shape)
-        #print(X[1].eval().shape)
-        #print(X_heldout[0].eval().shape)
-        #print(X_heldout[1].eval().shape)
-        #print(y.eval().shape)
-        #print(y_heldout.eval().shape)
-
-        #X, X_heldout, y, y_heldout = split_train_test(X, y, train_size=early_stopping_heldout, random_state=123)
-        ##X, X_heldout, y, y_heldout = train_test_split(X,y, train_size=early_stopping_heldout, random_state = 123)
-
-
         #num_batches = len(X) // self.batch_size
         #best = 0
-        #
-        #for epoch in range(self.num_epochs):
-        #    print("Epoch: {}\n".format(epoch))
-        #    epoch_cost = 0
-        #    idxs = np.random.choice(len(X), len(X), False)
+        train_size = X[0].shape[0]
+        #train_size = X[0].eval().shape[0]
+        n_train_batches  = train_size  // self.batch_size
+        best = 0
 
-        #    for batch_num in range(num_batches):
-        #        print(batch_num)
-        #        s = self.batch_size * batch_num
-        #        e = self.batch_size * (batch_num+1)
+        patience = 1000  # look as this many examples regardless
+        patience_increase = 2  # wait this much longer when a new best is
+                               # found
+        improvement_threshold = 0.995  # a relative improvement of this much is
+                                       # considered significant
+        #validation_frequency = min(n_train_batches, patience // 2)
+        validation_frequency = n_train_batches //4 
+                                      # go through this many
+                                      # minibatches before checking the network
+                                      # on the validation set.
 
-        #        batch = X[idxs[s:e]]
-        #        inputs = np.array(zip(*batch))
-        #        y_current = y[idxs[s:e]]
+        print("validation frequency: {}\n".format(validation_frequency))
+        best_validation_accuracy = -np.inf
+        best_iter = 0
+        start_time = timeit.default_timer()
+        epoch = 0
+        done_looping = False
 
-        #        cost = self.classifier.train(*inputs, y=y_current)
-        #        log_file.write("Epoch: {}, batch_num: {}, cost: {}\n".format(epoch, batch_num, cost))
-        #        log_file.flush()
-        #        epoch_cost += cost
-        #        
+        while (epoch < self.num_epochs) and (not done_looping):
+            epoch = epoch + 1
+            start_time_epoch = timeit.default_timer()
+            print("Epoch number: {}".format(epoch))
+            log_file.write("Epoch number: {}".format(epoch))
+            log_file.flush()
+            idxs = np.random.choice(train_size, train_size, False)
 
-        #best_params = self.classifier.get_params()
-        #self.classifier.set_params(best_params)
+            for batch_num in range(n_train_batches):
 
-        #log_file.close()
-        #return self
+                print(batch_num)
+                # TODO add training
+                s = self.batch_size * batch_num
+                e = self.batch_size * (batch_num+1)
+                batch_idxs = idxs[s:e]
+                X_batch, y_batch = get_batch(X, y, batch_idxs) 
+                #print(type(X_batch))
+                #print(type(X_batch[0]))
+                #print(type(y_batch))
+                cost = self.classifier.train(*X_batch, y=y_batch)
+                log_file.write("batch num: {}, cost: {}\n".format(batch_num, cost))
+                
+                
+            
+
+
+                #minibatch_avg_cost = train_model(minibatch_index)
+                #print("training on batch {}".format(minibatch_index))
+                # iteration number
+                iter = (epoch - 1) * n_train_batches + batch_num
+
+                #if (iter + 1) % validation_frequency == 0:
+                if (batch_num == 1):
+                    print("time to check validation! ")
+                    log_file.write("time to check validation! ")
+                    this_validation_cost, this_validation_accuracy,_ = self.classifier.val_fn(*X_heldout, y=y_heldout)
+            	    #print("this is the current validation lost {}".format(this_validation_cost))
+            	    #print("this is the current validation accuracy {}".format(this_validation_accuracy))
+            	    log_file.write("this is the current validation lost {}".format(this_validation_cost))
+            	    log_file.write("this is the current validation accuracy {}".format(this_validation_accuracy))
+                    
+                    # if we got the best validation score until now
+                    if this_validation_accuracy > best_validation_accuracy:
+                        #improve patience if loss improvement is good enough
+                        if (
+                            this_validation_accuracy > best_validation_accuracy *
+                            improvement_threshold
+                        ):
+                            patience = max(patience, iter * patience_increase)
+
+            	        best_validation_accuracy = this_validation_accuracy
+
+                        best_iter = iter
+                        best_params = self.classifier.get_params()
+
+                    break
+                log_file.flush()
+                        
+
+                if patience <= iter:
+                    done_looping = True
+                    break
+
+            end_time_epoch = timeit.default_timer()
+            total_time = (end_time_epoch - start_time_epoch) /60.
+            print("Total time for epoch: " + str(total_time))
+
+        
+        # TODO set best params
+        log_file.flush()
+        log_file.close()
+        self.classifier.set_params(best_params)
+        end_time = timeit.default_timer()
+        print("the code trained for {} ".format(((end_time-start_time)/60)))
+        print("Optimization finished: the best validation accuracy of {} achieved at {}".format(best_validation_accuracy, best_iter))
+
+        return self
 
     
     def predict(self, X, y):
-        inputs = np.array(zip(*X))
-        preds = self.classifier.pred(*inputs)
+        preds = self.classifier.pred(*X)
         precision, recall, fscore, support = score(y, preds)
         return preds,[precision, recall, fscore] 
 

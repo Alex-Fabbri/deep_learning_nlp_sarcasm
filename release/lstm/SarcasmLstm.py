@@ -94,7 +94,7 @@ class SarcasmLstm:
 
         val_acc_fn = T.mean(T.eq(preds, y),
                             dtype=theano.config.floatX)
-        val_fn = theano.function([X, M, y], [val_cost_fn, val_acc_fn, preds],
+        self.val_fn = theano.function([X, M, y], [val_cost_fn, val_acc_fn, preds],
                                  allow_input_downcast=True)
         #print(y_train)
         # Compile train objective

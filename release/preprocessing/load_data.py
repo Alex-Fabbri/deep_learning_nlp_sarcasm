@@ -64,8 +64,10 @@ def load_data(target,config_file):
 
     # put into shared variables  -- only useful if using GPU
     # move somewhere else
-    train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
-    test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
+    #train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
+    #test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
+    train_set_x, train_set_mask, train_set_y  = X_train, X_train_mask, y_train
+    test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
 
     #train_set_x, train_set_mask, train_set_y = X_train, X_train_mask, y_train
     #test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
@@ -76,11 +78,11 @@ def load_data(target,config_file):
     print "max length = " + str(max_l)
     #training = np.array(zip(*[train_set_x, train_set_mask]))
     training = train_set_x, train_set_mask
-    #y = np.asarray(train_set_y)
+    train_set_y = np.asarray(train_set_y)
 
     #testing = np.array(zip(*[test_set_x, test_set_mask]))
     testing = test_set_x, test_set_mask
-    #test_y = np.asarray(test_set_y)
+    test_set_y = np.asarray(test_set_y)
 
     return training,train_set_y,testing,test_set_y,return_dict
 
@@ -181,7 +183,8 @@ def iterate_minibatches(inputs,inputs2, targets, batch_size, shuffle=False):
 
 def split_train_test(X_tuple, y, train_size=.9, random_state=123):
     tuple_len = len(X_tuple)
-    x_shape = X_tuple[0].eval().shape[0]
+    x_shape = X_tuple[0].shape[0]
+    #x_shape = X_tuple[0].eval().shape[0]
     train_len= int(math.floor(x_shape * train_size))
     #print("train_len: {}\n".format(train_len))
     indxs = np.random.choice(x_shape, x_shape, False)
@@ -201,6 +204,13 @@ def split_train_test(X_tuple, y, train_size=.9, random_state=123):
 
     return x_train, x_holdout, y_train, y_holdout 
 
+def get_batch(X, y, batch_idxs):
+    x_arr = []
+    for i in range(len(X)):
+        x_arr.append(X[i][batch_idxs]) # .eval())
+    y = y[batch_idxs] # .eval()
+
+    return x_arr, y
 
 def read_model_data(model, filename):
     """Unpickles and loads parameters into a Lasagne model."""

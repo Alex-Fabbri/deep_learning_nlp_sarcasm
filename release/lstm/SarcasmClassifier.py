@@ -56,12 +56,9 @@ class SarcasmClassifier(BaseEstimator):
         self.classifier = SarcasmLstm(W=W,batch_size=self.batch_size,max_seq_len=self.max_seq_len) 
 
 
-    def fit(self, X, y):
+    def fit(self, X, y, log_file):
 
         print("starting training")
-        time_stamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        log_file = "logs/log_file_{}".format(time_stamp)
-        log_file = open(log_file, "w+")
 
         early_stopping_heldout = .9
         X, X_heldout, y, y_heldout = split_train_test(X, y, train_size=early_stopping_heldout, random_state=123)
@@ -83,7 +80,7 @@ class SarcasmClassifier(BaseEstimator):
                                       # minibatches before checking the network
                                       # on the validation set.
 
-        print("validation frequency: {}\n".format(validation_frequency))
+        #print("validation frequency: {}\n".format(validation_frequency))
         best_validation_accuracy = -np.inf
         best_iter = 0
         start_time = timeit.default_timer()
@@ -93,14 +90,14 @@ class SarcasmClassifier(BaseEstimator):
         while (epoch < self.num_epochs) and (not done_looping):
             epoch = epoch + 1
             start_time_epoch = timeit.default_timer()
-            print("Epoch number: {}".format(epoch))
-            log_file.write("Epoch number: {}".format(epoch))
+            print("Epoch number: {}\n".format(epoch))
+            log_file.write("Epoch number: {}\n".format(epoch))
             log_file.flush()
             idxs = np.random.choice(train_size, train_size, False)
 
             for batch_num in range(n_train_batches):
 
-                print(batch_num)
+                #print(batch_num)
                 s = self.batch_size * batch_num
                 e = self.batch_size * (batch_num+1)
                 batch_idxs = idxs[s:e]
@@ -116,11 +113,9 @@ class SarcasmClassifier(BaseEstimator):
                 iter = (epoch - 1) * n_train_batches + batch_num
 
                 if (iter + 1) % validation_frequency == 0:
-                    print("time to check validation! ")
-                    log_file.write("time to check validation! ")
                     this_validation_cost, this_validation_accuracy,_ = self.classifier.val_fn(*X_heldout, y=y_heldout)
-            	    log_file.write("this is the current validation lost {}".format(this_validation_cost))
-            	    log_file.write("this is the current validation accuracy {}".format(this_validation_accuracy))
+            	    log_file.write("this is the current validation lost {}\n".format(this_validation_cost))
+            	    log_file.write("this is the current validation accuracy {}\n".format(this_validation_accuracy))
                     
                     # if we got the best validation score until now
                     if this_validation_accuracy > best_validation_accuracy:
@@ -149,11 +144,10 @@ class SarcasmClassifier(BaseEstimator):
 
         
         log_file.flush()
-        log_file.close()
         self.classifier.set_params(best_params)
         end_time = timeit.default_timer()
-        print("the code trained for {} ".format(((end_time-start_time)/60)))
-        print("Optimization finished: the best validation accuracy of {} achieved at {}".format(best_validation_accuracy, best_iter))
+        print("the code trained for {}\n".format(((end_time-start_time)/60)))
+        print("Optimization finished: the best validation accuracy of {} achieved at {}\n".format(best_validation_accuracy, best_iter))
 
         return self
 

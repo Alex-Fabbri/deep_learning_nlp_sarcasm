@@ -8,4 +8,4 @@ w2v_file=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_lear
 w2v_type=bin
 num_hidden=256
 batch_size=16
-num_epochs=1
+num_epochs=25

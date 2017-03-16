@@ -20,7 +20,7 @@ from lasagne.layers import get_output_shape
 from sklearn.base import BaseEstimator
 from release.lstm.SarcasmLstm import SarcasmLstm
 from release.preprocessing.utils import str_to_bool 
-from sklearn.model_selection import train_test_split
+from release.preprocessing.load_data import split_train_test
 from sklearn.metrics import precision_recall_fscore_support as score
 from datetime import datetime
 
@@ -61,56 +61,54 @@ class SarcasmClassifier(BaseEstimator):
         log_file = "logs/log_file_{}".format(time_stamp)
         log_file = open(log_file, "w+")
 
+        #print(X[0].eval().shape)
+
         early_stopping_heldout = .9
-        X, X_heldout, y, y_heldout = train_test_split(X,y, train_size=early_stopping_heldout, random_state = 123)
+        X, X_heldout, y, y_heldout = split_train_test(X, y, train_size=early_stopping_heldout, random_state=123)
+
+        #print(X[0].eval().shape)
+        #print(X[1].eval().shape)
+        #print(X_heldout[0].eval().shape)
+        #print(X_heldout[1].eval().shape)
+        #print(y.eval().shape)
+        #print(y_heldout.eval().shape)
+
+        #X, X_heldout, y, y_heldout = split_train_test(X, y, train_size=early_stopping_heldout, random_state=123)
+        ##X, X_heldout, y, y_heldout = train_test_split(X,y, train_size=early_stopping_heldout, random_state = 123)
 
 
-        #data = zip(*X)
-        # data = tuples
-        num_batches = len(X) // self.batch_size
-        best = 0
-        #training = np.array(zip(*data))
-        #training = X
-        #print(training[:,0,:].shape)
-        
-        for epoch in range(self.num_epochs):
-            print("Epoch: {}\n".format(epoch))
-            epoch_cost = 0
+        #num_batches = len(X) // self.batch_size
+        #best = 0
+        #
+        #for epoch in range(self.num_epochs):
+        #    print("Epoch: {}\n".format(epoch))
+        #    epoch_cost = 0
+        #    idxs = np.random.choice(len(X), len(X), False)
 
-            idxs = np.random.choice(len(X), len(X), False)
-            #print('Unique', len(set(idxs)))
-                
-            for batch_num in range(num_batches):
-                print(batch_num)
-                s = self.batch_size * batch_num
-                e = self.batch_size * (batch_num+1)
+        #    for batch_num in range(num_batches):
+        #        print(batch_num)
+        #        s = self.batch_size * batch_num
+        #        e = self.batch_size * (batch_num+1)
 
-                batch = X[idxs[s:e]]
-                #inputs = zip(*batch)
-                inputs = np.array(zip(*batch))
+        #        batch = X[idxs[s:e]]
+        #        inputs = np.array(zip(*batch))
+        #        y_current = y[idxs[s:e]]
 
-                #X_current = np.array(inputs[0])
-                #X_current_mask = np.array(inputs[1])
-                y_current = y[idxs[s:e]]
+        #        cost = self.classifier.train(*inputs, y=y_current)
+        #        log_file.write("Epoch: {}, batch_num: {}, cost: {}\n".format(epoch, batch_num, cost))
+        #        log_file.flush()
+        #        epoch_cost += cost
+        #        
 
-                #cost = self.classifier.train(X_current, X_current_mask, y_current)
-                cost = self.classifier.train(*inputs, y=y_current)
-                log_file.write("Epoch: {}, batch_num: {}, cost: {}\n".format(epoch, batch_num, cost))
-                log_file.flush()
-                epoch_cost += cost
-                
+        #best_params = self.classifier.get_params()
+        #self.classifier.set_params(best_params)
 
-        best_params = self.classifier.get_params()
-        self.classifier.set_params(best_params)
-
-        log_file.close()
-        return self
+        #log_file.close()
+        #return self
 
     
-    def test(self, X, y):
+    def predict(self, X, y):
         inputs = np.array(zip(*X))
-        #X1 = data[0]
-        #X1_mask = data[1]
         preds = self.classifier.pred(*inputs)
         precision, recall, fscore, support = score(y, preds)
         return preds,[precision, recall, fscore] 

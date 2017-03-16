@@ -1,2 +1,4 @@
 *.pyc
 training_log*
+logs* 
+cmv* 

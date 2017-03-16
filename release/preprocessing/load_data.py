@@ -64,23 +64,25 @@ def load_data(target,config_file):
 
     # put into shared variables  -- only useful if using GPU
     # move somewhere else
-    #train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
-    #test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
+    train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
+    test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
 
-    train_set_x, train_set_mask, train_set_y = X_train, X_train_mask, y_train
-    test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
+    #train_set_x, train_set_mask, train_set_y = X_train, X_train_mask, y_train
+    #test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
 
 
     print "data loaded!"
     
     print "max length = " + str(max_l)
-    training = np.array(zip(*[train_set_x, train_set_mask]))
-    y = np.asarray(train_set_y)
+    #training = np.array(zip(*[train_set_x, train_set_mask]))
+    training = train_set_x, train_set_mask
+    #y = np.asarray(train_set_y)
 
-    testing = np.array(zip(*[test_set_x, test_set_mask]))
-    test_y = np.asarray(test_set_y)
+    #testing = np.array(zip(*[test_set_x, test_set_mask]))
+    testing = test_set_x, test_set_mask
+    #test_y = np.asarray(test_set_y)
 
-    return training,y,testing,test_y,return_dict
+    return training,train_set_y,testing,test_set_y,return_dict
 
 def text_to_indx(train_data, word_idx_map):
     X = []
@@ -132,7 +134,6 @@ def shared_dataset(data_xy, borrow=True):
         shared_y = theano.shared(np.asarray(data_y,
                                                dtype=theano.config.floatX),
                                  borrow=borrow)
-        return T.cast(shared_x, 'int32'), T.cast(shared_y, 'int32')
 
 def shared_dataset_mask(data_x,data_y, data_z, borrow=True):
         """ Function that loads the dataset into shared variables
@@ -161,7 +162,7 @@ def shared_dataset_mask(data_x,data_y, data_z, borrow=True):
         # ``shared_y`` we will have to cast it to int. This little hack
         # lets ous get around this issue
 
-        return T.cast(shared_x, 'int32'), T.cast(shared_y, 'int32'),T.cast(shared_z, 'int32')
+        return shared_x, shared_y, T.cast(shared_z, 'int32')
 
 def iterate_minibatches(inputs,inputs2, targets, batch_size, shuffle=False):
     ''' Taken from the mnist.py example of Lasagne'''
@@ -177,6 +178,29 @@ def iterate_minibatches(inputs,inputs2, targets, batch_size, shuffle=False):
         else:
             excerpt = slice(start_idx, start_idx + batch_size)
         yield inputs[excerpt], inputs2[excerpt], targets[excerpt]
+
+def split_train_test(X_tuple, y, train_size=.9, random_state=123):
+    tuple_len = len(X_tuple)
+    x_shape = X_tuple[0].eval().shape[0]
+    train_len= int(math.floor(x_shape * train_size))
+    #print("train_len: {}\n".format(train_len))
+    indxs = np.random.choice(x_shape, x_shape, False)
+
+    x_train = []
+    x_holdout = []
+    for i in range(tuple_len):
+        #test = X_tuple[i][indxs[0:train_len]]
+        #print("shape of test: {}\n".format(test.eval().shape))
+        x_train.append(X_tuple[i][indxs[0:train_len]])
+        x_holdout.append(X_tuple[i][indxs[train_len:]])
+
+    #print(y)
+    #print(y.shape)
+    y_train = y[indxs[0:train_len]]
+    y_holdout = y[indxs[train_len:]]
+
+    return x_train, x_holdout, y_train, y_holdout 
+
 
 def read_model_data(model, filename):
     """Unpickles and loads parameters into a Lasagne model."""

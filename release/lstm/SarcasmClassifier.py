@@ -30,31 +30,16 @@ from datetime import datetime
 
 
 class SarcasmClassifier(BaseEstimator):
-    def __init__(self,
-            W=None, 
-            W_path=None, 
-            K=300,
-            num_hidden=256, 
-            batch_size=16, 
-            bidirectional=False, 
-            grad_clip=100.0,
-            max_seq_len=200, 
-            num_classes=2, 
-            num_epochs = 25, 
-            **kwargs):
-            
+    def __init__(self,**kwargs):
 
-        self.W = W
-        self.K = int(K)
-        self.num_hidden = int(num_hidden)
-        self.bidirectional = str_to_bool(bidirectional)
-        self.grad_clip = float(grad_clip)
-        self.max_seq_len = int(max_seq_len)
-        self.num_classes = int(num_classes)
-        self.num_epochs = int(num_epochs)
-        self.batch_size = int(batch_size)
-        self.classifier = SarcasmLstm(W=W,batch_size=self.batch_size,max_seq_len=self.max_seq_len) 
-
+        self.max_seq_len = int(kwargs["max_seq_len"])
+        self.num_epochs = int(kwargs["num_epochs"])
+        self.batch_size = int(kwargs["batch_size"])
+        if kwargs["lstm"] in [None, "bi"]:
+            self.classifier = SarcasmLstm(**kwargs) 
+        else:
+            print("Something went wrong with the properties files\n")
+            quit()
 
     def fit(self, X, y, log_file):
 
@@ -104,10 +89,6 @@ class SarcasmClassifier(BaseEstimator):
                 X_batch, y_batch = get_batch(X, y, batch_idxs) 
                 cost = self.classifier.train(*X_batch, y=y_batch)
                 log_file.write("batch num: {}, cost: {}\n".format(batch_num, cost))
-                
-                
-            
-
 
                 # iteration number
                 iter = (epoch - 1) * n_train_batches + batch_num
@@ -132,8 +113,6 @@ class SarcasmClassifier(BaseEstimator):
                         best_params = self.classifier.get_params()
 
                 log_file.flush()
-                        
-
                 if patience <= iter:
                     done_looping = True
                     break

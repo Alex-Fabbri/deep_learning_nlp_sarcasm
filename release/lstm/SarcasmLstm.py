@@ -27,13 +27,20 @@ class SarcasmLstm:
                 K=300, 
                 num_hidden=256,
                 batch_size=None,
-                bidirectional=False, 
                 grad_clip=100., 
                 max_seq_len=200, 
-                num_classes=2):
+                num_classes=2, 
+                **kwargs):
 
         W = W
         V = len(W)
+        K = int(K)
+        num_hidden = int(num_hidden)
+        batch_size = int(batch_size)
+        grad_clip = int(grad_clip)
+        max_seq_len = int(max_seq_len)
+        num_classes = int(num_classes)    
+
 
         index = T.lscalar() 
         X = T.imatrix('X')
@@ -68,10 +75,34 @@ class SarcasmLstm:
             ingate=gate_params, forgetgate=gate_params, cell=cell_params,
             outgate=gate_params, learn_init=True
         )
+        if kwargs["lstm"] == "bi":
+            gate_params_bwd = lasagne.layers.recurrent.Gate(
+                W_in=lasagne.init.Orthogonal(), W_hid=lasagne.init.Orthogonal(),
+                b=lasagne.init.Constant(0.)
+            )
+            cell_params_bwd = lasagne.layers.recurrent.Gate(
+                W_in=lasagne.init.Orthogonal(), W_hid=lasagne.init.Orthogonal(),
+                W_cell=None, b=lasagne.init.Constant(0.),
+                nonlinearity=lasagne.nonlinearities.tanh
+            )
+            l_bwd = lasagne.layers.LSTMLayer(
+                     l_emb, num_units=num_hidden, grad_clipping=grad_clip,
+                     nonlinearity=lasagne.nonlinearities.tanh, mask_input=l_mask,
+                     ingate=gate_params_bwd, forgetgate=gate_params_bwd, cell=cell_params_bwd,
+                     outgate=gate_params_bwd, learn_init=True,
+                     backwards=True
+            )
+            l_bwd = lasagne.layers.DropoutLayer(l_bwd,p=0.5)
+
+            # concat and dropout
+            l_concat = lasagne.layers.ConcatLayer([l_fwd, l_bwd])
+            l_concat = lasagne.layers.DropoutLayer(l_concat,p=0.5)
+        else:
+            l_concat = l_fwd
     
     
         network = lasagne.layers.DenseLayer(
-            l_fwd,
+            l_concat,
             num_units=num_classes,
             nonlinearity=lasagne.nonlinearities.softmax
         )

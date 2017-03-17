@@ -17,6 +17,7 @@ class PreProcessor:
             self.num_hidden = config.get(header,"num_hidden")
             self.batch_size = config.get(header,"batch_size")
             self.num_epochs = config.get(header,"num_epochs")
+            self.lstm = config.get(header,"lstm")
         except:
             print("check the parameters that you entered in the config file")
             exit()

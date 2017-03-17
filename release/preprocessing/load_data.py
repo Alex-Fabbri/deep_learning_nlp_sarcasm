@@ -28,6 +28,7 @@ def load_data(target,config_file):
     both = str_to_bool(processor.both)
     top = str_to_bool(processor.topSim)
     batch_size = int(processor.batch_size)
+    return_dict["lstm"] = processor.lstm
 
 
     # get the train and validation data 

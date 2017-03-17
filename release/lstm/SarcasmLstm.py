@@ -48,12 +48,19 @@ class SarcasmLstm:
         y = T.ivector('y')
         # Input Layer
         l_in = lasagne.layers.InputLayer((batch_size, max_seq_len), input_var=X)
+        print(" l_in shape: {}\n".format(get_output_shape(l_in)))
         l_mask = lasagne.layers.InputLayer((batch_size, max_seq_len), input_var=M)
+        #l_mask2 = lasagne.layers.InputLayer((batch_size, max_seq_len), input_var=M)
+        #l_mask_concat = lasagne.layers.ConcatLayer([l_mask, l_mask2])
+
+        print(" l_mask shape: {}\n".format(get_output_shape(l_mask)))
+        #print(" l_mask shape: {}\n".format(get_output_shape(l_mask_concat)))
 
     
     
         # Embedding layer
         l_emb = lasagne.layers.EmbeddingLayer(l_in, input_size=V, output_size=K, W=W)
+        print(" l_emb shape: {}\n".format(get_output_shape(l_emb)))
     
         # add droput
         l_emb = lasagne.layers.DropoutLayer(l_emb, p=0.2)
@@ -75,6 +82,8 @@ class SarcasmLstm:
             ingate=gate_params, forgetgate=gate_params, cell=cell_params,
             outgate=gate_params, learn_init=True
         )
+        l_fwd = lasagne.layers.DropoutLayer(l_fwd,p=0.5)
+        print(" forward shape: {}\n".format(get_output_shape(l_fwd)))
         if kwargs["lstm"] == "bi":
             gate_params_bwd = lasagne.layers.recurrent.Gate(
                 W_in=lasagne.init.Orthogonal(), W_hid=lasagne.init.Orthogonal(),
@@ -93,19 +102,24 @@ class SarcasmLstm:
                      backwards=True
             )
             l_bwd = lasagne.layers.DropoutLayer(l_bwd,p=0.5)
+            print(" backward shape: {}\n".format(get_output_shape(l_bwd)))
 
             # concat and dropout
             l_concat = lasagne.layers.ConcatLayer([l_fwd, l_bwd])
-            l_concat = lasagne.layers.DropoutLayer(l_concat,p=0.5)
+            #l_concat = lasagne.layers.ElemwiseSumLayer([l_fwd, l_bwd])
+            l_concat_dropout = lasagne.layers.DropoutLayer(l_concat,p=0.5)
+            print(" concat shape: {}\n".format(get_output_shape(l_concat)))
         else:
-            l_concat = l_fwd
+            l_concat_dropout = l_fwd
     
     
         network = lasagne.layers.DenseLayer(
-            l_concat,
+            l_concat_dropout,
             num_units=num_classes,
             nonlinearity=lasagne.nonlinearities.softmax
         )
+        #print(" network shape: {}\n".format(get_output_shape(network)))
+
         self.network = network
         output = lasagne.layers.get_output(network)
 
@@ -127,6 +141,13 @@ class SarcasmLstm:
                             dtype=theano.config.floatX)
         self.val_fn = theano.function([X, M, y], [val_cost_fn, val_acc_fn, preds],
                                  allow_input_downcast=True)
+        concat_output = lasagne.layers.get_output(l_concat) 
+        fwd_output = lasagne.layers.get_output(l_fwd) 
+        bwd_output = lasagne.layers.get_output(l_bwd) 
+        mask_output  = lasagne.layers.get_output(l_mask)
+        #mask_concat_output  = lasagne.layers.get_output(l_mask_concat)
+
+        self.get_concat = theano.function([X,M], [concat_output, fwd_output, bwd_output, mask_output]) #, mask_concat_output])
         #print(y_train)
         # Compile train objective
         print "Compiling training functions"

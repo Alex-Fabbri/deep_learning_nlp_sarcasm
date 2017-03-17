@@ -87,8 +87,23 @@ class SarcasmClassifier(BaseEstimator):
                 e = self.batch_size * (batch_num+1)
                 batch_idxs = idxs[s:e]
                 X_batch, y_batch = get_batch(X, y, batch_idxs) 
+                # use to check output, get numpy arrays
+                #concat_output, fwd_output, bwd_output, l_mask = self.classifier.get_concat(*X_batch)
+                #print(l_mask[0,:])
+                #print(l_mask_concat[0,:])
+                #print(concat_output.shape)
+                #print(concat_output[0,:,0])
+                #print(fwd_output[0,197,:])
+                #print(bwd_output[0,:,0])
+                #print("forward last")
+                #print(fwd_output[0,190:197,0])
+                #print("backward last")
+                #print(bwd_output[0,190:197,0])
+
+
                 cost = self.classifier.train(*X_batch, y=y_batch)
                 log_file.write("batch num: {}, cost: {}\n".format(batch_num, cost))
+
 
                 # iteration number
                 iter = (epoch - 1) * n_train_batches + batch_num

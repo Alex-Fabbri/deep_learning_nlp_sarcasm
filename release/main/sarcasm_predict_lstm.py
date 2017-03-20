@@ -17,19 +17,20 @@ if __name__ == "__main__":
         print("working on target: {}\n".format(target))
         log_file.write("working on target: {}\n".format(target))
 
+        #load_data(target, sys.argv[1])
         training, y, testing, test_y, kwargs = load_data(target, sys.argv[1])
-        classifier = SarcasmClassifier(**kwargs)
-        classifier.fit(training, y, log_file)
-        classifier.save('output/models/classifier_{}_{}'.format(target, time_stamp))
-        preds,scores = classifier.predict(testing, test_y)
-        precision, recall, fscore = scores[0], scores[1], scores[2]
+        #classifier = SarcasmClassifier(**kwargs)
+        #classifier.fit(training, y, log_file)
+        #classifier.save('output/models/classifier_{}_{}'.format(target, time_stamp))
+        #preds,scores = classifier.predict(testing, test_y)
+        #precision, recall, fscore = scores[0], scores[1], scores[2]
 
-        log_file.write("precision for target {} : {}".format(target, precision))
-        log_file.write("recall for target {} : {}".format(target, recall))
-        log_file.write("fscore for target {} : {}".format(target, fscore))
-        log_file.flush()
-        np.save('output/preds/preds_{}_{}'.format(target, time_stamp), preds)
-        print("finished target: {}\n".format(target))
+        #log_file.write("precision for target {} : {}".format(target, precision))
+        #log_file.write("recall for target {} : {}".format(target, recall))
+        #log_file.write("fscore for target {} : {}".format(target, fscore))
+        #log_file.flush()
+        #np.save('output/preds/preds_{}_{}'.format(target, time_stamp), preds)
+        #print("finished target: {}\n".format(target))
 
     log_file.close()        
         

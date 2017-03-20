@@ -9,6 +9,7 @@ import re
 import warnings
 import sys
 import pandas as pd
+import nltk
 import logging
 import math
 import pickle
@@ -27,6 +28,7 @@ def load_data(target,config_file):
     path = processor.output
     both = str_to_bool(processor.both)
     top = str_to_bool(processor.topSim)
+    attention = str_to_bool(processor.attention)
     batch_size = int(processor.batch_size)
     return_dict["lstm"] = processor.lstm
 
@@ -49,43 +51,103 @@ def load_data(target,config_file):
     #logger.error("loading data...");
     
     x = cPickle.load(open(train_file,"rb"))
-    train_data, W, word_idx_map, max_l = x[0], x[1], x[2], x[3]
+    train_data, W, word_idx_map, max_sent_len = x[0], x[1], x[2], x[3]
     return_dict["W"] = W
 
-    X_train_indx, y_train = text_to_indx(train_data, word_idx_map)
-    X_train, X_train_mask = pad_mask(X_train_indx, max_l)
-    return_dict["max_seq_len"] = max_l
 
-
-    # get the test data
-
+    max_sent_len = 50
+    max_post_len = 40
+    return_dict["max_sent_len"] = max_sent_len
+    return_dict["max_post_len"] = max_post_len
     test_data = cPickle.load(open(test_file,'rb'))
-    X_test_indx, y_test = text_to_indx(test_data, word_idx_map)
-    X_test, X_test_mask = pad_mask(X_test_indx, max_l)
+    if (attention == False):
 
-    # put into shared variables  -- only useful if using GPU
-    # move somewhere else
-    #train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
-    #test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
-    train_set_x, train_set_mask, train_set_y  = X_train, X_train_mask, y_train
-    test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
-
-    #train_set_x, train_set_mask, train_set_y = X_train, X_train_mask, y_train
-    #test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
+        X_train_indx, y_train = text_to_indx(train_data, word_idx_map)
+        X_train, X_train_mask = pad_mask(X_train_indx, max_sent_len)
 
 
-    print "data loaded!"
-    
-    print "max length = " + str(max_l)
-    #training = np.array(zip(*[train_set_x, train_set_mask]))
-    training = train_set_x, train_set_mask
-    train_set_y = np.asarray(train_set_y)
+        # get the test data
 
-    #testing = np.array(zip(*[test_set_x, test_set_mask]))
-    testing = test_set_x, test_set_mask
-    test_set_y = np.asarray(test_set_y)
+        X_test_indx, y_test = text_to_indx(test_data, word_idx_map)
+        X_test, X_test_mask = pad_mask(X_test_indx, max_sent_len)
+
+        # put into shared variables  -- only useful if using GPU
+        # move somewhere else
+        #train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
+        #test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
+        train_set_x, train_set_mask, train_set_y  = X_train, X_train_mask, y_train
+        test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
+
+        #train_set_x, train_set_mask, train_set_y = X_train, X_train_mask, y_train
+        #test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
+
+
+        print "data loaded!"
+        
+        print "max length = " + str(max_sent_len)
+        #training = np.array(zip(*[train_set_x, train_set_mask]))
+        training = train_set_x, train_set_mask
+        train_set_y = np.asarray(train_set_y)
+
+        #testing = np.array(zip(*[test_set_x, test_set_mask]))
+        testing = test_set_x, test_set_mask
+        test_set_y = np.asarray(test_set_y)
+    else:
+        print("testing attention! \n")
+        X_train_indx, y_train = text_to_indx_sentence(train_data, word_idx_map)
+        X_train_indx_pad, X_train_indices_mask_sents, X_train_indices_mask_posts = text_to_indx_mask(X_train_indx, max_sent_len, max_post_len)
+
+        X_test_indx, y_test = text_to_indx_sentence(test_data, word_idx_map)
+        X_test_indx_pad, X_test_indices_mask_sents, X_test_indices_mask_posts = text_to_indx_mask(X_test_indx, max_sent_len, max_post_len)
+
+        training = X_train_indx_pad, X_train_indices_mask_sents, X_train_indices_mask_posts
+        train_set_y = np.asarray(y_train)
+
+        testing = X_test_indx_pad, X_test_indices_mask_sents, X_test_indices_mask_posts
+        test_set_y = np.asarray(y_test)
+        #print X_train_indx[0]
+        #print X_train_indx_pad[0]
+        #print(indices_mask_sents[0])
+        #print(indices_mask_posts[0])
 
     return training,train_set_y,testing,test_set_y,return_dict
+    
+def text_to_indx_mask(X_train_indx, max_sent_len, max_post_len):
+    X_train_indx_pad = []
+    indices_mask_sents = []
+    indices_mask_posts = []
+    
+    for post in X_train_indx:
+        post_length = len(post)
+        sentences_length = [len(x) for x in post]
+        curr_indx = pad_post(post, max_sent_len, max_post_len)
+        curr_mask_sents = make_sentence_mask(post_length, max_post_len, sentences_length, max_sent_len)
+        curr_mask_posts = make_mask(post_length, max_post_len)
+
+
+        X_train_indx_pad.append(curr_indx)
+        indices_mask_sents.append(curr_mask_sents)
+        indices_mask_posts.append(curr_mask_posts)
+
+    return X_train_indx_pad, indices_mask_sents, indices_mask_posts
+
+
+def make_mask(post_length, max_post_len):
+    return [1]*min(max_post_len, post_length) + [0]*max(0,max_post_len-post_length)
+
+def make_sentence_mask(post_length, max_post_len, sentence_lengths, max_sent_len):
+    ret = []
+    for i in range(min(post_length, max_post_len)):
+        ret.append([1]*min(sentence_lengths[i], max_sent_len) + [0]*max(0,max_sent_len - sentence_lengths[i]))
+    for i in range(max_post_len - post_length):
+        ret.append([0]*max_sent_len)
+    return ret    
+
+def pad_post(X_train_indx, max_l, max_s):
+    padded_post = []
+    for sentence in X_train_indx:
+        padded_post.append(sentence[:max_l] + [0]*max(0, max_l-len(sentence)))
+    return padded_post[:max_s] + [[0]*max_l]*max(0,(max_s-len(padded_post)))
 
 def text_to_indx(train_data, word_idx_map):
     X = []
@@ -101,6 +163,27 @@ def text_to_indx(train_data, word_idx_map):
                 # unknown word
                 out.append(1)
         X.append(out)
+        y.append(y_val)
+    return X,y
+def text_to_indx_sentence(train_data, word_idx_map):
+    X = []
+    y = []
+    for query in train_data:
+        text = query["text"]
+        y_val = query["y"]
+        sentences_arr = []
+        sentences = nltk.sent_tokenize(text)
+        for sentence in sentences:
+            out = []
+            words = nltk.word_tokenize(sentence)
+            for word in words:
+                if word in word_idx_map:
+                    out.append(word_idx_map[word])
+                else:
+                    out.append(1)
+            sentences_arr.append(out)   
+
+        X.append(sentences_arr)
         y.append(y_val)
     return X,y
 

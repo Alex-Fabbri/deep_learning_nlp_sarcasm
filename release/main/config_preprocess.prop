@@ -9,4 +9,5 @@ w2v_type=bin
 num_hidden=256
 batch_size=16
 num_epochs=25
-lstm=bi
+lstm=single
+attention=True

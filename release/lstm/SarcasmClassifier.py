@@ -32,10 +32,10 @@ from datetime import datetime
 class SarcasmClassifier(BaseEstimator):
     def __init__(self,**kwargs):
 
-        self.max_seq_len = int(kwargs["max_seq_len"])
+        self.max_seq_len = int(kwargs["max_sent_len"])
         self.num_epochs = int(kwargs["num_epochs"])
         self.batch_size = int(kwargs["batch_size"])
-        if kwargs["lstm"] in [None, "bi"]:
+        if kwargs["lstm"] in ["single", "bi"]:
             self.classifier = SarcasmLstm(**kwargs) 
         else:
             print("Something went wrong with the properties files\n")

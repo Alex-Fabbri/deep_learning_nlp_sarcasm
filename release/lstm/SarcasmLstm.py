@@ -28,7 +28,7 @@ class SarcasmLstm:
                 num_hidden=256,
                 batch_size=None,
                 grad_clip=100., 
-                max_seq_len=200, 
+                max_sent_len=200, 
                 num_classes=2, 
                 **kwargs):
 
@@ -38,7 +38,7 @@ class SarcasmLstm:
         num_hidden = int(num_hidden)
         batch_size = int(batch_size)
         grad_clip = int(grad_clip)
-        max_seq_len = int(max_seq_len)
+        max_seq_len = int(max_sent_len)
         num_classes = int(num_classes)    
 
 

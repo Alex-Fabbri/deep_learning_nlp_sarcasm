@@ -19,6 +19,7 @@ import lasagne
 from lasagne.layers import get_output_shape
 from sklearn.base import BaseEstimator
 from release.lstm.SarcasmLstm import SarcasmLstm
+from release.lstm.SarcasmLstmAttention import SarcasmLstmAttention
 from release.preprocessing.utils import str_to_bool 
 from release.preprocessing.load_data import split_train_test
 from release.preprocessing.load_data import get_batch
@@ -36,7 +37,10 @@ class SarcasmClassifier(BaseEstimator):
         self.num_epochs = int(kwargs["num_epochs"])
         self.batch_size = int(kwargs["batch_size"])
         if kwargs["lstm"] in ["single", "bi"]:
-            self.classifier = SarcasmLstm(**kwargs) 
+            if kwargs["attention"] == "True":
+                self.classifier = SarcasmLstmAttention(**kwargs)
+            else:
+                self.classifier = SarcasmLstm(**kwargs) 
         else:
             print("Something went wrong with the properties files\n")
             quit()

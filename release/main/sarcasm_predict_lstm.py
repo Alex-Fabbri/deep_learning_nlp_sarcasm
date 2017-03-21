@@ -19,8 +19,8 @@ if __name__ == "__main__":
 
         #load_data(target, sys.argv[1])
         training, y, testing, test_y, kwargs = load_data(target, sys.argv[1])
-        #classifier = SarcasmClassifier(**kwargs)
-        #classifier.fit(training, y, log_file)
+        classifier = SarcasmClassifier(**kwargs)
+        classifier.fit(training, y, log_file)
         #classifier.save('output/models/classifier_{}_{}'.format(target, time_stamp))
         #preds,scores = classifier.predict(testing, test_y)
         #precision, recall, fscore = scores[0], scores[1], scores[2]

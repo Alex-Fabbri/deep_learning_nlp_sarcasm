@@ -129,7 +129,7 @@ def text_to_indx_mask(X_train_indx, max_sent_len, max_post_len):
         indices_mask_sents.append(curr_mask_sents)
         indices_mask_posts.append(curr_mask_posts)
 
-    return X_train_indx_pad, indices_mask_sents, indices_mask_posts
+    return np.asarray(X_train_indx_pad, dtype=np.int32), np.asarray(indices_mask_sents,dtype=np.int32), np.asarray(indices_mask_posts, dtype=np.int32)
 
 
 def make_mask(post_length, max_post_len):

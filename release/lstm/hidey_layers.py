@@ -50,7 +50,7 @@ class AttentionWordLayer(lasagne.layers.MergeLayer):
                  custom_query=None, normalized=True, **kwargs):
         super(AttentionWordLayer, self).__init__(incomings, **kwargs)
         self.W_w = self.add_param(W_w, (incomings[0].output_shape[-1],d))
-        self.b_w = self.add_param(b_w, (1,))
+        #self.b_w = self.add_param(b_w, (1,))
         self.normalized = normalized
 
         self.fixed_query = True
@@ -98,7 +98,7 @@ class AttentionSentenceLayer(lasagne.layers.MergeLayer):
                  custom_query=None, **kwargs):
         super(AttentionSentenceLayer, self).__init__(incomings, **kwargs)
         self.W_s = self.add_param(W_s, (incomings[0].output_shape[-1], d))
-        self.b_s = self.add_param(b_s, (1,))
+        #self.b_s = self.add_param(b_s, (1,))
         
         self.fixed_query = True
         if custom_query is not None:

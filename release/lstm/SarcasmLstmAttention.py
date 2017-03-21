@@ -182,7 +182,7 @@ class SarcasmLstmAttention:
         word_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_rr_w, l_mask_rr_w], K,
                                                                       W_w = l_attn_rr_w.W_w,
                                                                       u_w = l_attn_rr_w.u_w,
-                                                                      b_w = l_attn_rr_w.b_w,
+                                                                      #b_w = l_attn_rr_w.b_w,
                                                                       normalized=False))
         self.word_attention = theano.function([idxs_rr,
                                                mask_rr_w],
@@ -248,7 +248,7 @@ class SarcasmLstmAttention:
         print "Compiling training functions"
         self.train = theano.function(inputs = [idxs_rr, mask_rr_w, mask_rr_s, y], outputs = cost, updates = grad_updates, allow_input_downcast=True,on_unused_input='warn')
         self.test = theano.function(inputs = [idxs_rr, mask_rr_w, mask_rr_s, y], outputs = val_acc_fn,allow_input_downcast=True,on_unused_input='warn')
-        self.pred = theano.function(inputs = [idxs_rr, mask_rr_w, mask_rr_s, y],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
+        self.pred = theano.function(inputs = [idxs_rr, mask_rr_w, mask_rr_s],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
 
     def get_params(self):
         return lasagne.layers.get_all_param_values(self.network)

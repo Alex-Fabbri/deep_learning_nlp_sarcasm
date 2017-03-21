@@ -141,13 +141,14 @@ class SarcasmLstm:
                             dtype=theano.config.floatX)
         self.val_fn = theano.function([X, M, y], [val_cost_fn, val_acc_fn, preds],
                                  allow_input_downcast=True)
-        concat_output = lasagne.layers.get_output(l_concat) 
-        fwd_output = lasagne.layers.get_output(l_fwd) 
-        bwd_output = lasagne.layers.get_output(l_bwd) 
-        mask_output  = lasagne.layers.get_output(l_mask)
-        #mask_concat_output  = lasagne.layers.get_output(l_mask_concat)
+        if kwargs["lstm"] == "bi":
+            concat_output = lasagne.layers.get_output(l_concat) 
+            fwd_output = lasagne.layers.get_output(l_fwd) 
+            bwd_output = lasagne.layers.get_output(l_bwd) 
+            mask_output  = lasagne.layers.get_output(l_mask)
+            #mask_concat_output  = lasagne.layers.get_output(l_mask_concat)
 
-        self.get_concat = theano.function([X,M], [concat_output, fwd_output, bwd_output, mask_output]) #, mask_concat_output])
+            self.get_concat = theano.function([X,M], [concat_output, fwd_output, bwd_output, mask_output]) #, mask_concat_output])
         #print(y_train)
         # Compile train objective
         print "Compiling training functions"

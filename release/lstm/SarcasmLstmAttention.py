@@ -47,84 +47,73 @@ class SarcasmLstmAttention:
 
         #S x N matrix of sentences (aka list of word indices)
         #B x S x N tensor of batches of posts
-        idxs_rr = T.itensor3('idxs_rr') #imatrix
-        #B x S matrix of discourse tags
-        #idxs_disc_rr = T.imatrix('idxs_disc_rr')
+        idxs_post = T.itensor3('idxs_post') #imatrix
         #B x S x N matrix
-        mask_rr_w = T.itensor3('mask_rr_w')
+        mask_post_words = T.itensor3('mask_post_words')
         #B x S matrix
-        mask_rr_s = T.imatrix('mask_rr_s')
+        mask_post_sents = T.imatrix('mask_post_sents')
         #B-long vector
         y = T.ivector('y')
-        #gold = T.ivector('gold')
+        # TODO
+        # Add biases, other params? 
         #lambda_w = T.scalar('lambda_w')
         #p_dropout = T.scalar('p_dropout')
-
-        #idxs_frames_rr = T.itensor3('idxs_frames_rr')
-        ##idxs_intra_rr = T.itensor3('idxs_intra_rr')
-        #idxs_intra_rr = T.imatrix('idxs_intra_rr')
-        #idxs_sentiment_rr = T.imatrix('idxs_sentiment_rr')
 
         #biases = T.matrix('biases')
         #weights = T.ivector('weights')
         
-        inputs = [idxs_rr, mask_rr_w, mask_rr_s]
+        inputs = [idxs_post, mask_post_words, mask_post_sents]
                 
         #now use this as an input to an LSTM
-        l_idxs_rr = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),
-                                            input_var=idxs_rr)
-        l_mask_rr_w = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),input_var=mask_rr_w)
-        l_mask_rr_s = lasagne.layers.InputLayer(shape=(None, max_post_len),
-                                                input_var=mask_rr_s)
-        #l_idxs_frames_rr = lasagne.layers.InputLayer(shape=(None, max_post_length, max_sentence_length),
-        #                                    input_var=idxs_frames_rr)
-        #l_disc_idxs_rr = lasagne.layers.InputLayer(shape=(None, max_post_length),
-        #                                            input_var=idxs_disc_rr)
-        #l_idxs_intra_rr = lasagne.layers.InputLayer(shape=(None, max_post_length),
-        #                                            input_var=idxs_intra_rr)
-        #l_idxs_sentiment_rr = lasagne.layers.InputLayer(shape=(None, max_post_length),
-        #                                            input_var=idxs_sentiment_rr)
+        l_idxs_post = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),
+                                            input_var=idxs_post)
+        l_mask_post_words = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),input_var=mask_post_words)
+        l_mask_post_sents = lasagne.layers.InputLayer(shape=(None, max_post_len),
+                                                input_var=mask_post_sents)
 
         #if add_biases:
         #    l_biases = lasagne.layers.InputLayer(shape=(None,1),
                                                  # input_var=biases)
         #now B x S x N x D
         #l_emb = lasagne.layers.EmbeddingLayer(l_in, input_size=V, output_size=K, W=W)
-        l_emb_rr_w = lasagne.layers.EmbeddingLayer(l_idxs_rr, input_size=V, output_size=K,
+        l_emb_rr_w = lasagne.layers.EmbeddingLayer(l_idxs_post, input_size=V, output_size=K,
                                                    W=W)
 #        l_hid = l_emb_rr_w
         #CBOW w/attn
         #now B x S x D
-        # TODO change
-        l_attn_rr_w = AttentionWordLayer([l_emb_rr_w, l_mask_rr_w], K)
+        l_attn_rr_w = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
         l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_attn_rr_w])
         ##concats = l_avg_rr_s_words
         ##concats = [l_avg_rr_s_words]
         l_avg_rr_s = l_avg_rr_s_words
 
+        # concats not relevant here, was just frames, sentiment etc for other task.
             
             
         #l_avg_rr_s = lasagne.layers.ConcatLayer(concats, axis=-1)
 
+        # TODO
+        # add highway ?
         #add MLP
         #if highway:
         #    l_avg_rr_s = HighwayLayer(l_avg_rr_s, num_units=l_avg_rr_s.output_shape[-1],
         #                              nonlinearity=lasagne.nonlinearities.rectify,
         #                              num_leading_axes=2)
         #    
-        # TODO
         l_lstm_rr_s = lasagne.layers.LSTMLayer(l_avg_rr_s, num_hidden,
                                                nonlinearity=lasagne.nonlinearities.tanh,
                                                grad_clipping=grad_clip,
-                                               mask_input=l_mask_rr_s)
+                                               mask_input=l_mask_post_sents)
         
         l_hid = l_lstm_rr_s
         #LSTM w/ attn
         #now B x D
-        l_attn_rr_s = AttentionSentenceLayer([l_lstm_rr_s, l_mask_rr_s], num_hidden)        
+        l_attn_rr_s = AttentionSentenceLayer([l_lstm_rr_s, l_mask_post_sents], num_hidden)        
         l_lstm_rr_avg = WeightedAverageSentenceLayer([l_lstm_rr_s, l_attn_rr_s])
         l_hid = l_lstm_rr_avg
-            
+
+        # TODO
+        # add more layers? biases? 
         #for num_layer in range(num_layers):
         #    l_hid = lasagne.layers.DenseLayer(l_hid, num_units=rd,
         #                                  nonlinearity=lasagne.nonlinearities.rectify)
@@ -146,7 +135,8 @@ class SarcasmLstmAttention:
         #
         #params = lasagne.layers.get_all_params(self.network, trainable=True)
         #
-        ##add regularization
+        # TODO
+        ##add regularization? different gradient technique?
         #loss += lambda_w*apply_penalty(params, l2)
 
         #updates = lasagne.updates.nesterov_momentum(loss, params,
@@ -179,29 +169,17 @@ class SarcasmLstmAttention:
         print('...')
         #attention for words, B x S x N        
          # TODO
-        word_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_rr_w, l_mask_rr_w], K,
+        word_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K,
                                                                       W_w = l_attn_rr_w.W_w,
                                                                       u_w = l_attn_rr_w.u_w,
                                                                       #b_w = l_attn_rr_w.b_w,
                                                                       normalized=False))
-        self.word_attention = theano.function([idxs_rr,
-                                               mask_rr_w],
+        self.word_attention = theano.function([idxs_post,
+                                               mask_post_words],
                                                word_attention,
                                                allow_input_downcast=True,
                                                on_unused_input='warn')
 
-        #if d_frames:        
-        #    frames_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_frames_rr_w, l_mask_rr_w], d,
-        #                                                                  W_w = l_attn_rr_frames.W_w,
-        #                                                                  u_w = l_attn_rr_frames.u_w,
-        #                                                                  b_w = l_attn_rr_frames.b_w,
-        #                                                                  normalized=False))
-        #    self.frames_attention = theano.function([idxs_frames_rr,
-        #                                           mask_rr_w],
-        #                                           frames_attention,
-        #                                           allow_input_downcast=True,
-        #                                           on_unused_input='warn')
-        #    
         #attention for sentences, B x S
         # TODO
         sentence_attention = lasagne.layers.get_output(l_attn_rr_s)
@@ -219,8 +197,6 @@ class SarcasmLstmAttention:
             num_units=num_classes,
             nonlinearity=lasagne.nonlinearities.softmax
         )
-        #theano.printing.debugprint(network, print_type=True)
-        #print(" network shape: {}\n".format(get_output_shape(network)))
 
         self.network = network
         output = lasagne.layers.get_output(network)
@@ -242,13 +218,13 @@ class SarcasmLstmAttention:
         val_acc_fn = T.mean(T.eq(preds, y),
                             dtype=theano.config.floatX)
 
-        self.val_fn = theano.function([idxs_rr, mask_rr_w, mask_rr_s, y], [val_cost_fn, val_acc_fn, preds],
+        self.val_fn = theano.function([idxs_post, mask_post_words, mask_post_sents, y], [val_cost_fn, val_acc_fn, preds],
                                  allow_input_downcast=True,on_unused_input='warn')
         # Compile train objective
-        print "Compiling training functions"
-        self.train = theano.function(inputs = [idxs_rr, mask_rr_w, mask_rr_s, y], outputs = cost, updates = grad_updates, allow_input_downcast=True,on_unused_input='warn')
-        self.test = theano.function(inputs = [idxs_rr, mask_rr_w, mask_rr_s, y], outputs = val_acc_fn,allow_input_downcast=True,on_unused_input='warn')
-        self.pred = theano.function(inputs = [idxs_rr, mask_rr_w, mask_rr_s],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
+        print "Compiling training, testing, prediction functions"
+        self.train = theano.function(inputs = [idxs_post, mask_post_words, mask_post_sents, y], outputs = cost, updates = grad_updates, allow_input_downcast=True,on_unused_input='warn')
+        self.test = theano.function(inputs = [idxs_post, mask_post_words, mask_post_sents, y], outputs = val_acc_fn,allow_input_downcast=True,on_unused_input='warn')
+        self.pred = theano.function(inputs = [idxs_post, mask_post_words, mask_post_sents],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
 
     def get_params(self):
         return lasagne.layers.get_all_param_values(self.network)

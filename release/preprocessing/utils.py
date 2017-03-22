@@ -219,21 +219,23 @@ def convert(label):
 
 def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
     path = input + '/5folds/' + target + '/'
-    if topSim == "False":
+    both = str_to_bool(both)
+    topSim = str_to_bool(topSim)
+    if topSim == False:
     	train_file = path + 'ucsc.txt.train' + target
     	test_file = path + 'ucsc.txt.test' + target
-    elif topSim == "True":
+    elif topSim == True:
     	train_file = path + 'ucsc.txt.train' + target +  '.topcontext' 
     	test_file = path + 'ucsc.txt.test' + target + '.topcontext'
     max_l = 200
 
-    if both == "False":
+    if both == False:
         output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext'  +'.TRAIN.' + target + '.pkl'
         output_test_file = output + 'pkl/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TEST.' + target + '.pkl'
         output_train_id_file = output  + '/ids/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TRAIN.' + target + '.id'
         output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TEST.' + target + '.id'
 
-    if both == "True" and topSim == "False":
+    if both == True and topSim == False:
         max_l = 400
 
         output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat'  +'.TRAIN.' + target + '.pkl'
@@ -241,7 +243,7 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
         output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TRAIN.' + target + '.id'
         output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TEST.' + target + '.id'
 
-    if both == "True" and topSim == "True":
+    if both == True and topSim == True:
         max_l = 400
 
         output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop'  +'.TRAIN.' + target + '.pkl'

@@ -1,7 +1,7 @@
 [PropertySection]
-input=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_learning_tests_spring2017/lasagne/input/
-output=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_learning_tests_spring2017/lasagne/output/
-both=False
+input=../preprocessing/input/
+output=../preprocessing/output/
+both=True
 topSim=False
 separate=False
 w2v_file=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_learning_tests_spring2017/lasagne/GoogleNews-vectors-negative300.bin

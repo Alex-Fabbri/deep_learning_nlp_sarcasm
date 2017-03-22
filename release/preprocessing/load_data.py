@@ -65,6 +65,7 @@ def load_data(target,config_file):
             max_post_len = 16
         else:
             max_post_len = 30
+    print("max post len: {}\n".format(max_post_len))            
         
     return_dict["max_sent_len"] = max_sent_len
     return_dict["max_post_len"] = max_post_len

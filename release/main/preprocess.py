@@ -15,6 +15,7 @@ if __name__=="__main__":
             train_test_separate(fold, vocab, w2v, processor.input, processor.output)
         else:
             # is the same whether or not using attention
+            # topSim == True does full context, not topSim for now
             train_test(fold, vocab, w2v, processor.input, processor.output, processor.both, processor.topSim)
 
             

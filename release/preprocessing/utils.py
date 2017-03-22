@@ -142,24 +142,25 @@ def read_data_file(data_file, max_l, is_train,both=False,topSim=False):
                 text = context + ' ' + text 
             
             text = text.lower()
+            ######
+            # Will deal with length in loading script, easier to deal with new processing for attention. 
             words = nltk.word_tokenize(text)
             # we dont keep the target word in the text - just to make it similar to the EMNLP2015 approach
-            removes = []
+            #removes = []
             newWords = []
             for index, word in enumerate(words):
                 newWords.append(word)
                 
             if len(newWords) > max_l:
                 words = words[:max_l]
-                change_count += 1
+            #    change_count += 1
             datum = {"y": int(label),
-                    "text": " ".join(words),
+                    "text": text,
                     "num_words": len(words)}
             queries.append(datum)
             ids.append(label)
     
-    print ("length more than %i: %i" % (max_l, change_count)) 
-    
+    #print ("length more than %i: %i" % (max_l, change_count)) 
     
     return queries,ids
 
@@ -218,21 +219,21 @@ def convert(label):
 
 def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
     path = input + '/5folds/' + target + '/'
-    if topSim == False:
+    if topSim == "False":
     	train_file = path + 'ucsc.txt.train' + target
     	test_file = path + 'ucsc.txt.test' + target
-    elif topSim == True:
+    elif topSim == "True":
     	train_file = path + 'ucsc.txt.train' + target +  '.topcontext' 
     	test_file = path + 'ucsc.txt.test' + target + '.topcontext'
     max_l = 200
 
-    if both == False:
+    if both == "False":
         output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext'  +'.TRAIN.' + target + '.pkl'
         output_test_file = output + 'pkl/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TEST.' + target + '.pkl'
         output_train_id_file = output  + '/ids/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TRAIN.' + target + '.id'
         output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TEST.' + target + '.id'
 
-    if both == True and topSim == False:
+    if both == "True" and topSim == "False":
         max_l = 400
 
         output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat'  +'.TRAIN.' + target + '.pkl'
@@ -240,7 +241,7 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
         output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TRAIN.' + target + '.id'
         output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TEST.' + target + '.id'
 
-    if both == True and topSim == True:
+    if both == "True" and topSim == "True":
         max_l = 400
 
         output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop'  +'.TRAIN.' + target + '.pkl'
@@ -248,10 +249,12 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
         output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contexttop'  + '.TRAIN.' + target + '.id'
         output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contexttop'  + '.TEST.' + target + '.id'
     
+
     np.random.seed(4321)
     
     print "loading training data for fold: " + target
     
+
     train_data,train_id = read_data_file(train_file,max_l, 1,both,topSim)
     test_data,test_id = read_data_file(test_file,max_l, 0,both,topSim)
     cPickle.dump(test_data, open(output_test_file, "wb"))

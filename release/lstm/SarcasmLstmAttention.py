@@ -81,8 +81,9 @@ class SarcasmLstmAttention:
 #        l_hid = l_emb_rr_w
         #CBOW w/attn
         #now B x S x D
-        l_attn_rr_w = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
-        l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_attn_rr_w])
+        l_attention_words = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
+        print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words)))
+        l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_attention_words])
         ##concats = l_avg_rr_s_words
         ##concats = [l_avg_rr_s_words]
         l_avg_rr_s = l_avg_rr_s_words
@@ -110,6 +111,7 @@ class SarcasmLstmAttention:
         #now B x D
         l_attn_rr_s = AttentionSentenceLayer([l_lstm_rr_s, l_mask_post_sents], num_hidden)        
         l_lstm_rr_avg = WeightedAverageSentenceLayer([l_lstm_rr_s, l_attn_rr_s])
+        print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg)))
         l_hid = l_lstm_rr_avg
 
         # TODO
@@ -170,9 +172,9 @@ class SarcasmLstmAttention:
         #attention for words, B x S x N        
          # TODO
         word_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K,
-                                                                      W_w = l_attn_rr_w.W_w,
-                                                                      u_w = l_attn_rr_w.u_w,
-                                                                      #b_w = l_attn_rr_w.b_w,
+                                                                      W_w = l_attention_words.W_w,
+                                                                      u_w = l_attention_words.u_w,
+                                                                      #b_w = l_attention_words.b_w,
                                                                       normalized=False))
         self.word_attention = theano.function([idxs_post,
                                                mask_post_words],

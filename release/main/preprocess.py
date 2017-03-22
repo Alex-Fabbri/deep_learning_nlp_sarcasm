@@ -10,9 +10,11 @@ if __name__=="__main__":
 
     folds = ['one', 'two', 'three', 'four', 'five']
     for fold in folds:
-        if(processor.separate):
+        if(processor.separate == "True"):
+            # separate doesn't fully work yet
             train_test_separate(fold, vocab, w2v, processor.input, processor.output)
         else:
+            # is the same whether or not using attention
             train_test(fold, vocab, w2v, processor.input, processor.output, processor.both, processor.topSim)
 
             

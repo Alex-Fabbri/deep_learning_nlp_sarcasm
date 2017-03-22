@@ -37,15 +37,18 @@ def load_data(target,config_file):
     if both == False:
         train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext.TRAIN.' +   target  + '.pkl'
         test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext.TEST.' + target +  '.pkl'
+        max_l = 200
     
     if both == True:
         train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat.TRAIN.' +   target  + '.pkl'
         test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat.TEST.' + target +  '.pkl'
+        max_l = 400
 
         
     if both == True and top == True:
         train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop.TRAIN.' +   target  + '.pkl'
         test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop.TEST.' + target +  '.pkl'
+        max_l = 400
     
     print "loading data...",
     #logger.error("loading data...");
@@ -56,20 +59,26 @@ def load_data(target,config_file):
 
 
     max_sent_len = 50
-    max_post_len = 40
+    max_post_len = 15 
+    if both == True:
+        if top == False:
+            max_post_len = 16
+        else:
+            max_post_len = 30
+        
     return_dict["max_sent_len"] = max_sent_len
     return_dict["max_post_len"] = max_post_len
     test_data = cPickle.load(open(test_file,'rb'))
     if (attention == False):
 
-        X_train_indx, y_train = text_to_indx(train_data, word_idx_map)
-        X_train, X_train_mask = pad_mask(X_train_indx, max_sent_len)
+        X_train_indx, y_train = text_to_indx(train_data, word_idx_map, max_l)
+        X_train, X_train_mask = pad_mask(X_train_indx, max_l)
 
 
         # get the test data
 
-        X_test_indx, y_test = text_to_indx(test_data, word_idx_map)
-        X_test, X_test_mask = pad_mask(X_test_indx, max_sent_len)
+        X_test_indx, y_test = text_to_indx(test_data, word_idx_map, max_l)
+        X_test, X_test_mask = pad_mask(X_test_indx, max_l)
 
         # put into shared variables  -- only useful if using GPU
         # move somewhere else
@@ -94,10 +103,10 @@ def load_data(target,config_file):
         test_set_y = np.asarray(test_set_y)
     else:
         print("testing attention! \n")
-        X_train_indx, y_train = text_to_indx_sentence(train_data, word_idx_map)
+        X_train_indx, y_train = text_to_indx_sentence(train_data, word_idx_map, max_post_len)
         X_train_indx_pad, X_train_indices_mask_sents, X_train_indices_mask_posts = text_to_indx_mask(X_train_indx, max_sent_len, max_post_len)
 
-        X_test_indx, y_test = text_to_indx_sentence(test_data, word_idx_map)
+        X_test_indx, y_test = text_to_indx_sentence(test_data, word_idx_map, max_post_len)
         X_test_indx_pad, X_test_indices_mask_sents, X_test_indices_mask_posts = text_to_indx_mask(X_test_indx, max_sent_len, max_post_len)
 
         training = X_train_indx_pad, X_train_indices_mask_sents, X_train_indices_mask_posts
@@ -149,11 +158,13 @@ def pad_post(X_train_indx, max_l, max_s):
         padded_post.append(sentence[:max_l] + [0]*max(0, max_l-len(sentence)))
     return padded_post[:max_s] + [[0]*max_l]*max(0,(max_s-len(padded_post)))
 
-def text_to_indx(train_data, word_idx_map):
+def text_to_indx(train_data, word_idx_map, max_l):
     X = []
     y = []
     for query in train_data:
-        text = query["text"].split()
+        #text = query["text"].split()
+        text = nltk.word_tokenize(query["text"])
+        text = text[:max_l]
         y_val = query["y"]
         out = []
         for word in text:
@@ -165,17 +176,21 @@ def text_to_indx(train_data, word_idx_map):
         X.append(out)
         y.append(y_val)
     return X,y
-def text_to_indx_sentence(train_data, word_idx_map):
+def text_to_indx_sentence(train_data, word_idx_map, max_post_length):
     X = []
     y = []
+    max_sentence_length = 50
     for query in train_data:
         text = query["text"]
         y_val = query["y"]
         sentences_arr = []
         sentences = nltk.sent_tokenize(text)
+        if len(sentences) > max_post_length:
+            continue
         for sentence in sentences:
             out = []
             words = nltk.word_tokenize(sentence)
+            words = words[:max_sentence_length]
             for word in words:
                 if word in word_idx_map:
                     out.append(word_idx_map[word])

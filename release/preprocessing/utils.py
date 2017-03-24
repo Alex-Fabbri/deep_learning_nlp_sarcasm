@@ -167,7 +167,7 @@ def read_data_file(data_file, max_l, is_train,both=False,topSim=False):
 """
 The input file format is: 1st column is label (int), 2rd column is keyword, and 4nd column is query (string)
 """
-def read_data_file_separate(data_file, max_x1, max_x2, is_train):
+def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim):
     queries = []
     all_ids = []
     change_count = 0
@@ -176,7 +176,10 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train):
             line = line.strip()
             [label, text,context] = line.split('\t')
             current = text.lower()
-            previous = getLastSentence(context).lower()
+            if(not top_Sim):
+                previous = getLastSentence(context).lower()
+            else:
+                previous = context.lower().decode('latin1')
 
             x1_words = []
             x2_words = []
@@ -193,8 +196,8 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train):
                 change_count += 1
             
             datum = {"y": int(label),
-                    "x1": " ".join(x1_words),
-                    "x2": " ".join(x2_words),
+                    "x1": current,
+                    "x2": previous,
                     "x1_len": len(x1_words),
                     "x2_len": len(x2_words)}
             queries.append(datum)
@@ -289,7 +292,7 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
     
     print "dataset created!"
 
-def train_test_separate(fold,vocab,w2v,input,output):
+def train_test_separate(fold,vocab,w2v,input,output,topSim):
 
     train_file = input + '/5folds/' + fold + '/' +  'ucsc.txt.train' + fold 
     test_file = input + '/5folds/' + fold + '/' +  'ucsc.txt.test' + fold 
@@ -315,9 +318,9 @@ def train_test_separate(fold,vocab,w2v,input,output):
 
     
     print "loading training data...",
-    train_data,train_id = read_data_file_separate(train_file, max_x1, max_x2, 1)
+    train_data,train_id = read_data_file_separate(train_file, max_x1, max_x2, 1, topSim)
     
-    test_data,test_id = read_data_file_separate(test_file, max_x1,max_x2, 0)
+    test_data,test_id = read_data_file_separate(test_file, max_x1,max_x2, 0, topSim)
     cPickle.dump(test_data, open(output_test_file, "wb"))
     
     writer_perf = open(output_test_file + '.txt' , 'w')

@@ -12,7 +12,7 @@ if __name__=="__main__":
     for fold in folds:
         if(processor.separate == "True"):
             # separate doesn't fully work yet
-            train_test_separate(fold, vocab, w2v, processor.input, processor.output)
+            train_test_separate(fold, vocab, w2v, processor.input, processor.output, processor.topSim)
         else:
             # is the same whether or not using attention
             # topSim == True does full context, not topSim for now

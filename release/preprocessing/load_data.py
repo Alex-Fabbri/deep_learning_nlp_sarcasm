@@ -29,6 +29,7 @@ def load_data(target,config_file):
     both = str_to_bool(processor.both)
     top = str_to_bool(processor.topSim)
     attention = str_to_bool(processor.attention)
+    separate = str_to_bool(processor.separate)
     batch_size = int(processor.batch_size)
     return_dict["lstm"] = processor.lstm
 
@@ -49,7 +50,13 @@ def load_data(target,config_file):
         train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop.TRAIN.' +   target  + '.pkl'
         test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop.TEST.' + target +  '.pkl'
         max_l = 400
-    
+
+    if separate == True:
+         
+        train_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  +'.TRAIN.' + target + '.pkl'
+        test_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + target + '.pkl'
+        max_l = 400
+            
     print "loading data...",
     #logger.error("loading data...");
     
@@ -65,60 +72,84 @@ def load_data(target,config_file):
             max_post_len = 16
         else:
             max_post_len = 30
+    if separate == True:
+        max_post_len = 30
     print("max post len: {}\n".format(max_post_len))            
         
     return_dict["max_sent_len"] = max_sent_len
     return_dict["max_post_len"] = max_post_len
     test_data = cPickle.load(open(test_file,'rb'))
-    if (attention == False):
-
-        X_train_indx, y_train = text_to_indx(train_data, word_idx_map, max_l)
-        X_train, X_train_mask = pad_mask(X_train_indx, max_l)
+    if(separate == True):
+        print("This is separate\n")
 
 
-        # get the test data
-
-        X_test_indx, y_test = text_to_indx(test_data, word_idx_map, max_l)
-        X_test, X_test_mask = pad_mask(X_test_indx, max_l)
-
-        # put into shared variables  -- only useful if using GPU
-        # move somewhere else
-        #train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
-        #test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
-        train_set_x, train_set_mask, train_set_y  = X_train, X_train_mask, y_train
-        test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
-
-        #train_set_x, train_set_mask, train_set_y = X_train, X_train_mask, y_train
-        #test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
+        X_train_indx_context,X_train_indx_response,y_train = text_to_indx_sentence_separate(train_data, word_idx_map, max_post_len)
+        X_train_indx_pad_context, X_train_indices_mask_sents_context, X_train_indices_mask_posts_context = text_to_indx_mask(X_train_indx_context, max_sent_len, max_post_len)
+        X_train_indx_pad_response, X_train_indices_mask_sents_response, X_train_indices_mask_posts_response = text_to_indx_mask(X_train_indx_response, max_sent_len, max_post_len)
 
 
-        print "data loaded!"
-        
-        print "max length = " + str(max_sent_len)
-        #training = np.array(zip(*[train_set_x, train_set_mask]))
-        training = train_set_x, train_set_mask
-        train_set_y = np.asarray(train_set_y)
+        X_test_indx_context, X_test_indx_response, y_test = text_to_indx_sentence_separate(test_data, word_idx_map, max_post_len)
+        X_test_indx_pad_context, X_test_indices_mask_sents_context, X_test_indices_mask_posts_context = text_to_indx_mask(X_test_indx_context, max_sent_len, max_post_len)
+        X_test_indx_pad_response, X_test_indices_mask_sents_response, X_test_indices_mask_posts_response = text_to_indx_mask(X_test_indx_response, max_sent_len, max_post_len)
 
-        #testing = np.array(zip(*[test_set_x, test_set_mask]))
-        testing = test_set_x, test_set_mask
-        test_set_y = np.asarray(test_set_y)
-    else:
-        print("testing attention! \n")
-        X_train_indx, y_train = text_to_indx_sentence(train_data, word_idx_map, max_post_len)
-        X_train_indx_pad, X_train_indices_mask_sents, X_train_indices_mask_posts = text_to_indx_mask(X_train_indx, max_sent_len, max_post_len)
 
-        X_test_indx, y_test = text_to_indx_sentence(test_data, word_idx_map, max_post_len)
-        X_test_indx_pad, X_test_indices_mask_sents, X_test_indices_mask_posts = text_to_indx_mask(X_test_indx, max_sent_len, max_post_len)
 
-        training = X_train_indx_pad, X_train_indices_mask_sents, X_train_indices_mask_posts
+        training = X_train_indx_pad_context, X_train_indices_mask_sents_context, X_train_indices_mask_posts_context,X_train_indx_pad_response, X_train_indices_mask_sents_response, X_train_indices_mask_posts_response
         train_set_y = np.asarray(y_train)
 
-        testing = X_test_indx_pad, X_test_indices_mask_sents, X_test_indices_mask_posts
+        testing = X_test_indx_pad_context, X_test_indices_mask_sents_context, X_test_indices_mask_posts_context,X_test_indx_pad_response, X_test_indices_mask_sents_response, X_test_indices_mask_posts_response
         test_set_y = np.asarray(y_test)
-        #print X_train_indx[0]
-        #print X_train_indx_pad[0]
-        #print(indices_mask_sents[0])
-        #print(indices_mask_posts[0])
+
+    else:
+        if (attention == False):
+
+            X_train_indx, y_train = text_to_indx(train_data, word_idx_map, max_l)
+            X_train, X_train_mask = pad_mask(X_train_indx, max_l)
+
+
+            # get the test data
+
+            X_test_indx, y_test = text_to_indx(test_data, word_idx_map, max_l)
+            X_test, X_test_mask = pad_mask(X_test_indx, max_l)
+
+            # put into shared variables  -- only useful if using GPU
+            # move somewhere else
+            #train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
+            #test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
+            train_set_x, train_set_mask, train_set_y  = X_train, X_train_mask, y_train
+            test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
+
+            #train_set_x, train_set_mask, train_set_y = X_train, X_train_mask, y_train
+            #test_set_x, test_set_mask, test_set_y = X_test, X_test_mask, y_test
+
+
+            print "data loaded!"
+            
+            print "max length = " + str(max_sent_len)
+            #training = np.array(zip(*[train_set_x, train_set_mask]))
+            training = train_set_x, train_set_mask
+            train_set_y = np.asarray(train_set_y)
+
+            #testing = np.array(zip(*[test_set_x, test_set_mask]))
+            testing = test_set_x, test_set_mask
+            test_set_y = np.asarray(test_set_y)
+        else:
+            print("testing attention! \n")
+            X_train_indx, y_train = text_to_indx_sentence(train_data, word_idx_map, max_post_len)
+            X_train_indx_pad, X_train_indices_mask_sents, X_train_indices_mask_posts = text_to_indx_mask(X_train_indx, max_sent_len, max_post_len)
+
+            X_test_indx, y_test = text_to_indx_sentence(test_data, word_idx_map, max_post_len)
+            X_test_indx_pad, X_test_indices_mask_sents, X_test_indices_mask_posts = text_to_indx_mask(X_test_indx, max_sent_len, max_post_len)
+
+            training = X_train_indx_pad, X_train_indices_mask_sents, X_train_indices_mask_posts
+            train_set_y = np.asarray(y_train)
+
+            testing = X_test_indx_pad, X_test_indices_mask_sents, X_test_indices_mask_posts
+            test_set_y = np.asarray(y_test)
+            #print X_train_indx[0]
+            #print X_train_indx_pad[0]
+            #print(indices_mask_sents[0])
+            #print(indices_mask_posts[0])
 
     return training,train_set_y,testing,test_set_y,return_dict
     
@@ -202,6 +233,50 @@ def text_to_indx_sentence(train_data, word_idx_map, max_post_length):
         X.append(sentences_arr)
         y.append(y_val)
     return X,y
+
+def text_to_indx_sentence_separate(train_data, word_idx_map, max_post_length):
+    X = []
+    X_context = []
+    y = []
+    max_sentence_length = 50
+    for query in train_data:
+        text1 = query["x1"]
+        text2 = query["x2"]
+        y_val = query["y"]
+        sentences_arr = []
+        sentences = nltk.sent_tokenize(text2)
+        if len(sentences) > max_post_length:
+            continue
+        for sentence in sentences:
+            out = []
+            words = nltk.word_tokenize(sentence)
+            words = words[:max_sentence_length]
+            for word in words:
+                if word in word_idx_map:
+                    out.append(word_idx_map[word])
+                else:
+                    out.append(1)
+            sentences_arr.append(out)   
+        X.append(sentences_arr)
+        sentences_arr = []
+        sentences = nltk.sent_tokenize(text2)
+        # TODO, how to deal with long context
+        #if len(sentences) > max_post_length:
+        #    continue
+        for sentence in sentences:
+            out = []
+            words = nltk.word_tokenize(sentence)
+            words = words[:max_sentence_length]
+            for word in words:
+                if word in word_idx_map:
+                    out.append(word_idx_map[word])
+                else:
+                    out.append(1)
+            sentences_arr.append(out)   
+
+        X_context.append(sentences_arr)
+        y.append(y_val)
+    return X_context, X, y
 
 def pad_mask(X_train_indx, max_l):
 

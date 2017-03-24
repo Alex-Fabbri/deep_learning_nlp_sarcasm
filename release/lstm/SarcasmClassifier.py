@@ -20,6 +20,7 @@ from lasagne.layers import get_output_shape
 from sklearn.base import BaseEstimator
 from release.lstm.SarcasmLstm import SarcasmLstm
 from release.lstm.SarcasmLstmAttention import SarcasmLstmAttention
+from release.lstm.SarcasmLstmAttentionSeparate import SarcasmLstmAttentionSeparate
 from release.preprocessing.utils import str_to_bool 
 from release.preprocessing.load_data import split_train_test
 from release.preprocessing.load_data import get_batch
@@ -36,14 +37,14 @@ class SarcasmClassifier(BaseEstimator):
         self.max_seq_len = int(kwargs["max_sent_len"])
         self.num_epochs = int(kwargs["num_epochs"])
         self.batch_size = int(kwargs["batch_size"])
-        if kwargs["lstm"] in ["single", "bi"]:
+        if kwargs["separate"] == "False":
             if kwargs["attention"] == "True":
                 self.classifier = SarcasmLstmAttention(**kwargs)
             else:
                 self.classifier = SarcasmLstm(**kwargs) 
         else:
-            print("Something went wrong with the properties files\n")
-            quit()
+                self.classifier = SarcasmLstmAttentionSeparate(**kwargs) 
+                print("Attention with separating context and response!\n")
 
     def fit(self, X, y, log_file):
 

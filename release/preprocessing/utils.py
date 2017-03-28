@@ -124,7 +124,7 @@ def str_to_bool(s):
 """
 for input file, assume 1st column is label (int), and 2nd column is query (string)
 """
-def read_data_file(data_file, max_l, is_train,both=False,topSim=False):
+def read_data_file(data_file, max_l, is_train,both=False,topSim=False,lastSent=False):
     queries = []
     ids = []
     change_count = 0
@@ -137,14 +137,17 @@ def read_data_file(data_file, max_l, is_train,both=False,topSim=False):
             # initially - just do with the original msg only 
             # later do both 
             if both == True and topSim == False:
-                text = getLastSentence(context) + ' ' + text 
+                if lastSent == True:
+                    text = getLastSentence(context) + ' ' + text 
+                else:
+                    text = context + ' ' + text
             if both == True and topSim == True:
                 text = context + ' ' + text 
             
             text = text.lower()
             ######
             # Will deal with length in loading script, easier to deal with new processing for attention. 
-            words = nltk.word_tokenize(text)
+            words = nltk.word_tokenize(text.decode('latin1'))
             # we dont keep the target word in the text - just to make it similar to the EMNLP2015 approach
             #removes = []
             newWords = []
@@ -167,7 +170,7 @@ def read_data_file(data_file, max_l, is_train,both=False,topSim=False):
 """
 The input file format is: 1st column is label (int), 2rd column is keyword, and 4nd column is query (string)
 """
-def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim):
+def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim, last_Sent):
     queries = []
     all_ids = []
     change_count = 0
@@ -177,7 +180,10 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim):
             [label, text,context] = line.split('\t')
             current = text.lower()
             if(not top_Sim):
-                previous = getLastSentence(context).lower()
+                if(not last_Sent):
+                    previous = context.lower().decode('latin1')
+                else:    
+                    previous = getLastSentence(context).lower()
             else:
                 previous = context.lower().decode('latin1')
 
@@ -220,10 +226,11 @@ def convert(label):
     elif label.strip() == 'notsarc':
         return "0.0"
 
-def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
+def train_test(target,vocab,w2v,input,output,both=False,topSim=True, lastSent=False):
     path = input + '/5folds/' + target + '/'
     both = str_to_bool(both)
     topSim = str_to_bool(topSim)
+    lastSent = str_to_bool(lastSent)
     if topSim == False:
     	train_file = path + 'ucsc.txt.train' + target
     	test_file = path + 'ucsc.txt.test' + target
@@ -240,14 +247,23 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
 
     if both == True and topSim == False:
         max_l = 400
+        if lastSent == True:
+            output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextlast'  +'.TRAIN.' + target + '.pkl'
+            output_test_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextlast'  + '.TEST.' + target + '.pkl'
+            output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextlast'  + '.TRAIN.' + target + '.id'
+            output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextlast'  + '.TEST.' + target + '.id'
 
-        output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat'  +'.TRAIN.' + target + '.pkl'
-        output_test_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TEST.' + target + '.pkl'
-        output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TRAIN.' + target + '.id'
-        output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TEST.' + target + '.id'
+        else:
+            output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat'  +'.TRAIN.' + target + '.pkl'
+            output_test_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TEST.' + target + '.pkl'
+            output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TRAIN.' + target + '.id'
+            output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TEST.' + target + '.id'
 
     if both == True and topSim == True:
         max_l = 400
+        if lastSent == True:
+            print("Make up your mind! :P \n")
+            quit()
 
         output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop'  +'.TRAIN.' + target + '.pkl'
         output_test_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop'  + '.TEST.' + target + '.pkl'
@@ -260,8 +276,8 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
     print "loading training data for fold: " + target
     
 
-    train_data,train_id = read_data_file(train_file,max_l, 1,both,topSim)
-    test_data,test_id = read_data_file(test_file,max_l, 0,both,topSim)
+    train_data,train_id = read_data_file(train_file,max_l, 1,both,topSim,lastSent)
+    test_data,test_id = read_data_file(test_file,max_l, 0,both,topSim,lastSent)
     cPickle.dump(test_data, open(output_test_file, "wb"))
 
     
@@ -292,21 +308,39 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True):
     
     print "dataset created!"
 
-def train_test_separate(fold,vocab,w2v,input,output,topSim):
+def train_test_separate(target,vocab,w2v,input,output,topSim,lastSent):
 
-    train_file = input + '/5folds/' + fold + '/' +  'ucsc.txt.train' + fold 
-    test_file = input + '/5folds/' + fold + '/' +  'ucsc.txt.test' + fold 
+    path = input + '/5folds/' + target + '/'
+    topSim = str_to_bool(topSim)
+    lastSent = str_to_bool(lastSent)
+    if topSim == False:
+    	train_file = path + 'ucsc.txt.train' + target
+    	test_file = path + 'ucsc.txt.test' + target
+    elif topSim == True:
+    	train_file = path + 'ucsc.txt.train' + target +  '.topcontext' 
+    	test_file = path + 'ucsc.txt.test' + target + '.topcontext'
 
-    output_train_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  +'.TRAIN.' + fold + '.pkl'
-    output_test_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + fold + '.pkl'
 
+    if topSim == False:
+        if lastSent == True:
+            output_train_file = output + '/pkl/2_cnn/w2v_300/' + 'ucsc.contextseplast'  +'.TRAIN.' + target + '.pkl'
+            output_test_file = output + '/pkl/2_cnn/w2v_300/' + 'ucsc.contextseplast'  + '.TEST.' + target + '.pkl'
+            output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextseplast'  + '.TRAIN.' + target + '.id'
+            output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextseplast'  + '.TEST.' + target + '.id'
 
+        else:
+            output_train_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  +'.TRAIN.' + target + '.pkl'
+            output_test_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + target + '.pkl'
 
+            output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TRAIN.' + target + '.id'
+            output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + target + '.id'
 
+    else:
+        output_train_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  +'.TRAIN.' + target + '.pkl'
+        output_test_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  + '.TEST.' + target + '.pkl'
 
-
-    output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TRAIN.' + fold + '.id'
-    output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + fold + '.id'
+        output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  + '.TRAIN.' + target + '.id'
+        output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  + '.TEST.' + target + '.id'
 
     
     max_x1 = 200
@@ -318,9 +352,9 @@ def train_test_separate(fold,vocab,w2v,input,output,topSim):
 
     
     print "loading training data...",
-    train_data,train_id = read_data_file_separate(train_file, max_x1, max_x2, 1, topSim)
+    train_data,train_id = read_data_file_separate(train_file, max_x1, max_x2, 1, topSim,lastSent)
     
-    test_data,test_id = read_data_file_separate(test_file, max_x1,max_x2, 0, topSim)
+    test_data,test_id = read_data_file_separate(test_file, max_x1,max_x2, 0, topSim,lastSent)
     cPickle.dump(test_data, open(output_test_file, "wb"))
     
     writer_perf = open(output_test_file + '.txt' , 'w')

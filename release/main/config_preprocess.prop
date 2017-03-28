@@ -1,9 +1,10 @@
 [PropertySection]
 input=../preprocessing/input/
 output=../preprocessing/output/
-both=False
+both=True
 topSim=False
-separate=False
+lastSent=True
+separate=True
 w2v_file=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_learning_tests_spring2017/lasagne/GoogleNews-vectors-negative300.bin
 w2v_type=bin
 num_hidden=256

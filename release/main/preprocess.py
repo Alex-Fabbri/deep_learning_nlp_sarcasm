@@ -11,12 +11,12 @@ if __name__=="__main__":
     folds = ['one', 'two', 'three', 'four', 'five']
     for fold in folds:
         if(processor.separate == "True"):
-            # separate doesn't fully work yet
-            train_test_separate(fold, vocab, w2v, processor.input, processor.output, processor.topSim)
+            train_test_separate(fold, vocab, w2v, processor.input, processor.output, processor.topSim, processor.lastSent)
         else:
+            print("train_test")
+            print(processor.lastSent)
             # is the same whether or not using attention
-            # topSim == True does full context, not topSim for now
-            train_test(fold, vocab, w2v, processor.input, processor.output, processor.both, processor.topSim)
+            train_test(fold, vocab, w2v, processor.input, processor.output, processor.both, processor.topSim, processor.lastSent)
 
             
 

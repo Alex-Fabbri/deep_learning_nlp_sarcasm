@@ -14,7 +14,7 @@ if __name__=="__main__":
             train_test_separate(fold, vocab, w2v, processor.input, processor.output, processor.topSim, processor.lastSent)
         else:
             print("train_test")
-            print(processor.lastSent)
+            #print(processor.lastSent)
             # is the same whether or not using attention
             train_test(fold, vocab, w2v, processor.input, processor.output, processor.both, processor.topSim, processor.lastSent)
 

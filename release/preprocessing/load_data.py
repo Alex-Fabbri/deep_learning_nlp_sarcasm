@@ -28,6 +28,8 @@ def load_data(target,config_file):
     path = processor.output
     both = str_to_bool(processor.both)
     top = str_to_bool(processor.topSim)
+    lastSent = str_to_bool(processor.lastSent)
+    print(lastSent)
     attention = str_to_bool(processor.attention)
     separate = str_to_bool(processor.separate)
     batch_size = int(processor.batch_size)
@@ -36,26 +38,55 @@ def load_data(target,config_file):
 
     # get the train and validation data 
     if both == False:
+        print("loading just response text\n")
         train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext.TRAIN.' +   target  + '.pkl'
         test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext.TEST.' + target +  '.pkl'
         max_l = 200
     
-    if both == True:
-        train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat.TRAIN.' +   target  + '.pkl'
-        test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat.TEST.' + target +  '.pkl'
-        max_l = 400
+    if both == True and top == False:
+
+        if lastSent == True:
+            print("loading last sentence context\n")
+            train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextlast.TRAIN.' +   target  + '.pkl'
+            test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextlast.TEST.' + target +  '.pkl'
+            max_l = 400
+        else:
+            print("loading fully concatenated context\n")
+
+            train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat.TRAIN.' +   target  + '.pkl'
+            test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat.TEST.' + target +  '.pkl'
+            max_l = 400
 
         
     if both == True and top == True:
+        print("Loading top similar sentence context\n")
+        max_l = 400
+        if lastSent == True:
+            print("Make up your mind! :P \n")
+            quit()
         train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop.TRAIN.' +   target  + '.pkl'
         test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop.TEST.' + target +  '.pkl'
         max_l = 400
 
     if separate == True:
          
-        train_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  +'.TRAIN.' + target + '.pkl'
-        test_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + target + '.pkl'
-        max_l = 400
+        print("Separate loading, is this what you want?\n")
+        if top == False:
+            if lastSent == True:
+                print("loading separate last sentence context\n")
+                train_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextseplast'  +'.TRAIN.' + target + '.pkl'
+                test_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextseplast'  + '.TEST.' + target + '.pkl'
+                max_l = 400
+            else:
+                print("loading separate fully context\n")
+                train_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  +'.TRAIN.' + target + '.pkl'
+                test_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + target + '.pkl'
+                max_l = 400
+        else:
+            print("loading separate top sim context\n")
+            train_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  +'.TRAIN.' + target + '.pkl'
+            test_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  + '.TEST.' + target + '.pkl'
+            max_l = 400
             
     print "loading data...",
     #logger.error("loading data...");
@@ -67,22 +98,25 @@ def load_data(target,config_file):
 
     max_sent_len = 50
     max_post_len = 15 
-    if both == True:
-        if top == False:
-            max_post_len = 16
-        else:
-            max_post_len = 30
-    if separate == True:
-        max_post_len = 30
+
+    #if both == True:
+    #    if top == True or lastSent == True:
+    #        max_post_len = 16
+    #    else:
+    #        max_post_len = 30
+    #if separate == True:
+    #    max_post_len = 30
     print("max post len: {}\n".format(max_post_len))            
         
+    return_dict["max_sent_len_basic"] = max_l
     return_dict["max_sent_len"] = max_sent_len
     return_dict["max_post_len"] = max_post_len
     test_data = cPickle.load(open(test_file,'rb'))
     if(separate == True):
         print("This is separate\n")
 
-
+        # The separate model currently only deals with the word and sentence heirarchy in the attention model.
+        # 
         X_train_indx_context,X_train_indx_response,y_train = text_to_indx_sentence_separate(train_data, word_idx_map, max_post_len)
         X_train_indx_pad_context, X_train_indices_mask_sents_context, X_train_indices_mask_posts_context = text_to_indx_mask(X_train_indx_context, max_sent_len, max_post_len)
         X_train_indx_pad_response, X_train_indices_mask_sents_response, X_train_indices_mask_posts_response = text_to_indx_mask(X_train_indx_response, max_sent_len, max_post_len)
@@ -102,9 +136,13 @@ def load_data(target,config_file):
 
     else:
         if (attention == False):
+            print("basic model without attention\n")
 
             X_train_indx, y_train = text_to_indx(train_data, word_idx_map, max_l)
             X_train, X_train_mask = pad_mask(X_train_indx, max_l)
+            #print("shapes\n")
+            #print(X_train.shape)
+            #print(X_train_mask.shape)
 
 
             # get the test data
@@ -112,8 +150,11 @@ def load_data(target,config_file):
             X_test_indx, y_test = text_to_indx(test_data, word_idx_map, max_l)
             X_test, X_test_mask = pad_mask(X_test_indx, max_l)
 
+            #print("shapes\n")
+            #print(X_test.shape)
+            #print(X_test_mask.shape)
+
             # put into shared variables  -- only useful if using GPU
-            # move somewhere else
             #train_set_x, train_set_mask, train_set_y = shared_dataset_mask(X_train, X_train_mask, y_train)
             #test_set_x, test_set_mask, test_set_y = shared_dataset_mask(X_test, X_test_mask, y_test)
             train_set_x, train_set_mask, train_set_y  = X_train, X_train_mask, y_train

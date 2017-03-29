@@ -34,17 +34,18 @@ from datetime import datetime
 class SarcasmClassifier(BaseEstimator):
     def __init__(self,**kwargs):
 
-        self.max_seq_len = int(kwargs["max_sent_len"])
         self.num_epochs = int(kwargs["num_epochs"])
         self.batch_size = int(kwargs["batch_size"])
         if kwargs["separate"] == "False":
             if kwargs["attention"] == "True":
+                print("lstm with attention, not separate\n")
                 self.classifier = SarcasmLstmAttention(**kwargs)
             else:
+                print("basic lstm\n")
                 self.classifier = SarcasmLstm(**kwargs) 
         else:
-                self.classifier = SarcasmLstmAttentionSeparate(**kwargs) 
-                print("Attention with separating context and response!\n")
+            self.classifier = SarcasmLstmAttentionSeparate(**kwargs) 
+            print("Attention with separating context and response!\n")
 
     def fit(self, X, y, log_file):
 

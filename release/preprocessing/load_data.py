@@ -99,11 +99,12 @@ def load_data(target,config_file):
     max_sent_len = 50
     max_post_len = 15 
 
-    #if both == True:
-    #    if top == True or lastSent == True:
-    #        max_post_len = 16
-    #    else:
-    #        max_post_len = 30
+    if both == True:
+        if top == True or lastSent == True:
+            max_post_len = 16
+        else:
+            max_post_len = 30
+
     #if separate == True:
     #    max_post_len = 30
     print("max post len: {}\n".format(max_post_len))            
@@ -257,7 +258,7 @@ def text_to_indx_sentence(train_data, word_idx_map, max_post_length):
         text = query["text"]
         y_val = query["y"]
         sentences_arr = []
-        sentences = nltk.sent_tokenize(text)
+        sentences = nltk.sent_tokenize(text.decode('latin'))
         if len(sentences) > max_post_length:
             continue
         for sentence in sentences:

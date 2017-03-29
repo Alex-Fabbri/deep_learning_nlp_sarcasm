@@ -140,7 +140,7 @@ class WeightedAverageWordLayer(lasagne.layers.MergeLayer):
         super(WeightedAverageWordLayer, self).__init__(incomings, **kwargs)
 
     def get_output_for(self, inputs, **kwargs):
-        return T.sum(inputs[0] * inputs[1][:,:,:,None], axis=2)
+        return T.cast(T.sum(inputs[0] * inputs[1][:,:,:,None], axis=2), 'float32')
 
     def get_output_shape_for(self, input_shapes):
         return (None, input_shapes[0][1], input_shapes[0][-1])

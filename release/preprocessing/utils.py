@@ -357,12 +357,19 @@ def train_test_separate(target,vocab,w2v,input,output,topSim,lastSent):
     test_data,test_id = read_data_file_separate(test_file, max_x1,max_x2, 0, topSim,lastSent)
     cPickle.dump(test_data, open(output_test_file, "wb"))
     
-    writer_perf = open(output_test_file + '.txt' , 'w')
-    for data in test_data:
-        writer_perf.write(str(data))
-        writer_perf.write('\n')
+    writer1 = open(output_train_id_file,'w')
+    for id in train_id:
+        writer1.write(id)
+        writer1.write('\n')
+        
+    writer1.close()
     
-    writer_perf.close()
+    writer2 = open(output_test_id_file,'w')
+    for id in test_id:
+        writer2.write(id)
+        writer2.write('\n')
+        
+    writer2.close()
     
  
     

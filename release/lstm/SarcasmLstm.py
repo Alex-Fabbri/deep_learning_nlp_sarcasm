@@ -60,6 +60,8 @@ class SarcasmLstm:
     
         # Embedding layer
         l_emb = lasagne.layers.EmbeddingLayer(l_in, input_size=V, output_size=K, W=W)
+        # keep the embeddings static
+        l_emb.params[l_emb.W].remove('trainable')
         print(" l_emb shape: {}\n".format(get_output_shape(l_emb)))
     
         # add droput

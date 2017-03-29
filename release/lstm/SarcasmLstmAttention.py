@@ -78,12 +78,16 @@ class SarcasmLstmAttention:
         #l_emb = lasagne.layers.EmbeddingLayer(l_in, input_size=V, output_size=K, W=W)
         l_emb_rr_w = lasagne.layers.EmbeddingLayer(l_idxs_post, input_size=V, output_size=K,
                                                    W=W)
+        l_emb_rr_w.params[l_emb_rr_w.W].remove('trainable')
 #        l_hid = l_emb_rr_w
         #CBOW w/attn
         #now B x S x D
-        l_attention_words = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
-        print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words)))
-        l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_attention_words])
+        #l_attention_words = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
+        #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words)))
+        #l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_attention_words])
+        #l_attention_words = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
+        #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words)))
+        l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_mask_post_words])
         ##concats = l_avg_rr_s_words
         ##concats = [l_avg_rr_s_words]
         l_avg_rr_s = l_avg_rr_s_words
@@ -171,26 +175,26 @@ class SarcasmLstmAttention:
         print('...')
         #attention for words, B x S x N        
          # TODO
-        word_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K,
-                                                                      W_w = l_attention_words.W_w,
-                                                                      u_w = l_attention_words.u_w,
-                                                                      #b_w = l_attention_words.b_w,
-                                                                      normalized=False))
-        self.word_attention = theano.function([idxs_post,
-                                               mask_post_words],
-                                               word_attention,
-                                               allow_input_downcast=True,
-                                               on_unused_input='warn')
+        #word_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K,
+        #                                                              W_w = l_attention_words.W_w,
+        #                                                              u_w = l_attention_words.u_w,
+        #                                                              #b_w = l_attention_words.b_w,
+        #                                                              normalized=False))
+        #self.word_attention = theano.function([idxs_post,
+        #                                       mask_post_words],
+        #                                       word_attention,
+        #                                       allow_input_downcast=True,
+        #                                       on_unused_input='warn')
 
         #attention for sentences, B x S
         # TODO
-        sentence_attention = lasagne.layers.get_output(l_attn_rr_s)
-        #if add_biases:
-        #    inputs = inputs[:-1]
-        self.sentence_attention = theano.function(inputs,
-                                                  sentence_attention,
-                                                  allow_input_downcast=True,
-                                                  on_unused_input='warn')
+        #sentence_attention = lasagne.layers.get_output(l_attn_rr_s)
+        ##if add_biases:
+        ##    inputs = inputs[:-1]
+        #self.sentence_attention = theano.function(inputs,
+        #                                          sentence_attention,
+        #                                          allow_input_downcast=True,
+        #                                          on_unused_input='warn')
         print('finished compiling...')
     
     

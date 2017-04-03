@@ -87,12 +87,13 @@ class SarcasmLstmAttentionSeparate:
         #l_emb = lasagne.layers.EmbeddingLayer(l_in, input_size=V, output_size=K, W=W)
         l_emb_rr_w_context = lasagne.layers.EmbeddingLayer(l_idxs_context, input_size=V, output_size=K,
                                                    W=W)
+        l_emb_rr_w_context.params[l_emb_rr_w_context.W].remove('trainable')
 #        l_hid_context = l_emb_rr_w
         #CBOW w/attn
         #now B x S x D
-        l_attention_words_context = AttentionWordLayer([l_emb_rr_w_context, l_mask_context_words], K)
-        print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_context)))
-        l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context, l_attention_words_context])
+        #l_attention_words_context = AttentionWordLayer([l_emb_rr_w_context, l_mask_context_words], K)
+        #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_context)))
+        l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context, l_mask_context_words])
         ##concats = l_avg_rr_s_words_context
         ##concats = [l_avg_rr_s_words_context]
         l_avg_rr_s_context = l_avg_rr_s_words_context
@@ -141,12 +142,13 @@ class SarcasmLstmAttentionSeparate:
         #l_emb = lasagne.layers.EmbeddingLayer(l_in, input_size=V, output_size=K, W=W)
         l_emb_rr_w_response = lasagne.layers.EmbeddingLayer(l_idxs_response, input_size=V, output_size=K,
                                                    W=W)
+        l_emb_rr_w_response.params[l_emb_rr_w_response.W].remove('trainable')
 #        l_hid_response = l_emb_rr_w
         #CBOW w/attn
         #now B x S x D
-        l_attention_words_response = AttentionWordLayer([l_emb_rr_w_response, l_mask_response_words], K)
-        print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_response)))
-        l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response, l_attention_words_response])
+        #l_attention_words_response = AttentionWordLayer([l_emb_rr_w_response, l_mask_response_words], K)
+        #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_response)))
+        l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response, l_mask_response_words])
         ##concats = l_avg_rr_s_words_response
         ##concats = [l_avg_rr_s_words_response]
         l_avg_rr_s_response = l_avg_rr_s_words_response

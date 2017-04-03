@@ -6,7 +6,7 @@ both=False
 topSim=False
 lastSent=False
 # separate=True is used for the stacked lstms, uses full context if topSim=False and lastSent=False
-separate=False
+separate=True
 # attention=True unless you want the basic word to word model. 
 attention=True
 w2v_file=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_learning_tests_spring2017/lasagne/GoogleNews-vectors-negative300.bin

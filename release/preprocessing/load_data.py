@@ -70,7 +70,7 @@ def load_data(target,config_file):
 
     if separate == True:
          
-        print("Separate loading, is this what you want?\n")
+        print("Separate loading,this overrides any previous booleans. Is this what you want?\n")
         if top == False:
             if lastSent == True:
                 print("loading separate last sentence context\n")
@@ -286,7 +286,7 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_post_length):
         text2 = query["x2"]
         y_val = query["y"]
         sentences_arr = []
-        sentences = nltk.sent_tokenize(text2)
+        sentences = nltk.sent_tokenize(text1)
         if len(sentences) > max_post_length:
             continue
         for sentence in sentences:

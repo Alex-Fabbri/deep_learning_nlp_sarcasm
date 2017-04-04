@@ -19,6 +19,7 @@ import lasagne
 from lasagne.layers import get_output_shape
 from lasagne.regularization import apply_penalty, l2
 
+from release.preprocessing.utils import str_to_bool
 from release.lstm.hidey_layers import AttentionWordLayer, AttentionSentenceLayer, WeightedAverageWordLayer, WeightedAverageSentenceLayer, HighwayLayer
 
 
@@ -44,6 +45,7 @@ class SarcasmLstmAttention:
         max_seq_len = int(max_sent_len)
         max_post_len = int(kwargs["max_post_len"])
         num_classes = int(num_classes)    
+        attention_words = str_to_bool(kwargs["attention_words"])
 
         #S x N matrix of sentences (aka list of word indices)
         #B x S x N tensor of batches of posts
@@ -84,10 +86,14 @@ class SarcasmLstmAttention:
         #now B x S x D
         #l_attention_words = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
         #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words)))
-        #l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_attention_words])
-        #l_attention_words = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
-        #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words)))
-        l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_mask_post_words])
+        if attention_words:
+            print("attention on the words!\n")
+            l_attention_words = AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K)
+            #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words)))
+            l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_attention_words])
+        else:
+            print("no attention on the words, just averaged\n")
+            l_avg_rr_s_words = WeightedAverageWordLayer([l_emb_rr_w, l_mask_post_words])
         ##concats = l_avg_rr_s_words
         ##concats = [l_avg_rr_s_words]
         l_avg_rr_s = l_avg_rr_s_words

@@ -12,6 +12,8 @@ class PreProcessor:
 	    self.both = config.get(header,"both")
 	    self.topSim  = config.get(header,"topSim")
             self.separate = config.get(header,"separate")
+            self.separate_attention_context = config.get(header, "separate_attention_context")
+            self.separate_attention_response = config.get(header, "separate_attention_response")
             self.lastSent = config.get(header,"lastSent")
 	    self.w2v_file = config.get(header,"w2v_file")
             self.w2v_type = config.get(header,"w2v_type")

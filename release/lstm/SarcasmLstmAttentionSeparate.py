@@ -19,6 +19,7 @@ import lasagne
 from lasagne.layers import get_output_shape
 from lasagne.regularization import apply_penalty, l2
 
+from release.preprocessing.utils import str_to_bool
 from release.lstm.hidey_layers import AttentionWordLayer, AttentionSentenceLayer, WeightedAverageWordLayer, WeightedAverageSentenceLayer, HighwayLayer
 
 
@@ -44,6 +45,12 @@ class SarcasmLstmAttentionSeparate:
         max_seq_len = int(max_sent_len)
         max_post_len = int(kwargs["max_post_len"])
         num_classes = int(num_classes)    
+        separate_attention_context = str_to_bool(kwargs["separate_attention_context"])
+        separate_attention_response = str_to_bool(kwargs["separate_attention_response"])
+        print("this is the separate_attention_context: {}\n".format(separate_attention_context))
+
+        print("this is the separate_attention_response: {}\n".format(separate_attention_response))
+
 
         #S x N matrix of sentences (aka list of word indices)
         #B x S x N tensor of batches of responses
@@ -119,9 +126,16 @@ class SarcasmLstmAttentionSeparate:
         l_hid_context = l_lstm_rr_s_context
         #LSTM w/ attn
         #now B x D
-        l_attn_rr_s_context = AttentionSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents], num_hidden)        
-        l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_attn_rr_s_context])
-        print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
+        if separate_attention_context:
+            print("separate attention context\n")
+            l_attn_rr_s_context = AttentionSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents], num_hidden)        
+            l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_attn_rr_s_context])
+            print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
+        else:
+            print("just averaged context without attention\n")
+            l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents])
+            print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
+
         l_hid_context = l_lstm_rr_avg_context
 
         # TODO 
@@ -171,12 +185,18 @@ class SarcasmLstmAttentionSeparate:
                                                grad_clipping=grad_clip,
                                                mask_input=l_mask_response_sents)
         
-        l_hid_response = l_lstm_rr_s_response
         #LSTM w/ attn
         #now B x D
-        l_attn_rr_s_response = AttentionSentenceLayer([l_lstm_rr_s_response, l_mask_response_sents], num_hidden)        
-        l_lstm_rr_avg_response = WeightedAverageSentenceLayer([l_lstm_rr_s_response, l_attn_rr_s_response])
-        print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_response)))
+        if separate_attention_response:
+            print("separate attention on the response\n")
+            l_attn_rr_s_response = AttentionSentenceLayer([l_lstm_rr_s_response, l_mask_response_sents], num_hidden)        
+            l_lstm_rr_avg_response = WeightedAverageSentenceLayer([l_lstm_rr_s_response, l_attn_rr_s_response])
+            print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_response)))
+        else:
+            print("just average response without attention\n")
+            l_lstm_rr_avg_response = WeightedAverageSentenceLayer([l_lstm_rr_s_response, l_mask_response_sents])
+            print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_response)))
+
         l_hid_response = l_lstm_rr_avg_response
 
         # TODO

@@ -1,3 +1,4 @@
+# code from Chris Hidey @ Columbia University: https://github.com/chridey/cmv/tree/master/cmv
 import theano
 import theano.tensor as T
 import numpy as np
@@ -150,7 +151,7 @@ class WeightedAverageSentenceLayer(lasagne.layers.MergeLayer):
         super(WeightedAverageSentenceLayer, self).__init__(incomings, **kwargs)
         
     def get_output_for(self, inputs, **kwargs):
-        return T.sum(inputs[0] * inputs[1][:,:,None], axis=1)
+        return T.cast(T.sum(inputs[0] * inputs[1][:,:,None], axis=1), 'float32')
 
     def get_output_shape_for(self, input_shapes):
         return (None, input_shapes[0][-1])

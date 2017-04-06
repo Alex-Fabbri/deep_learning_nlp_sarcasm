@@ -39,6 +39,7 @@ class SarcasmLstmAttentionSeparate:
         W = W
         V = len(W)
         K = int(K)
+        print("this is the value of K: {}\n".format(K))
         num_hidden = int(num_hidden)
         batch_size = int(batch_size)
         grad_clip = int(grad_clip)

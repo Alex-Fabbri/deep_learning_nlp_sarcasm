@@ -23,6 +23,7 @@ class PreProcessor:
             self.lastSent = config.get(header,"lastSent")
 	    self.w2v_file = config.get(header,"w2v_file")
             self.w2v_type = config.get(header,"w2v_type")
+            self.K = config.get(header,"K")
             self.num_hidden = config.get(header,"num_hidden")
             self.batch_size = config.get(header,"batch_size")
             self.num_epochs = config.get(header,"num_epochs")

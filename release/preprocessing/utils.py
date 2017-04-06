@@ -148,7 +148,7 @@ def read_data_file(data_file, max_l, is_train,both=False,topSim=False,lastSent=F
             text = text.lower()
             ######
             # Will deal with length in loading script, easier to deal with new processing for attention. 
-            words = nltk.word_tokenize(text.decode('latin1'))
+            words = nltk.word_tokenize(text.decode('utf-8'))
             # we dont keep the target word in the text - just to make it similar to the EMNLP2015 approach
             #removes = []
             newWords = []
@@ -182,11 +182,11 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim, last_S
             current = text.lower()
             if(not top_Sim):
                 if(not last_Sent):
-                    previous = context.lower().decode('latin1')
+                    previous = context.lower().decode('utf-8')
                 else:    
                     previous = getLastSentence(context).lower()
             else:
-                previous = context.lower().decode('latin1')
+                previous = context.lower().decode('utf-8')
 
             x1_words = []
             x2_words = []

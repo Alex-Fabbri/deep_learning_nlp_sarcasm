@@ -17,6 +17,8 @@ class PreProcessor:
             self.separate = config.get(header,"separate")
             self.separate_attention_context = config.get(header, "separate_attention_context")
             self.separate_attention_response = config.get(header, "separate_attention_response")
+            self.separate_attention_context_words = config.get(header, "separate_attention_context_words")
+            self.separate_attention_response_words = config.get(header, "separate_attention_response_words")
             self.interaction = config.get(header, "interaction")
             self.lastSent = config.get(header,"lastSent")
 	    self.w2v_file = config.get(header,"w2v_file")
@@ -27,6 +29,7 @@ class PreProcessor:
             self.lstm = config.get(header,"lstm")
             self.attention = config.get(header,"attention")
             self.attention_words = config.get(header,"attention_words")
+            self.attention_sentences = config.get(header, "attention_sentences")
         except:
             print("check the parameters that you entered in the config file")
             exit()

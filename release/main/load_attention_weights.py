@@ -26,10 +26,12 @@ if __name__ == "__main__":
         with np.load(filename) as f:
             param_values = [f['arr_%d' % i] for i in range(len(f.files))]
         attention_classifier.set_params(param_values)
-        test_sentence_attention = attention_classifier.sentence_attention_response(*testing)
+        test_sentence_attention,preds = attention_classifier.sentence_attention_response(*testing)
         test_sentence_context = attention_classifier.sentence_attention_context(*testing)
         for i in range(test_sentence_context.shape[0]):
             print("example: {} \n".format(i))
+            print("gold label: {} \n".format(test_y[i]))
+            print("predicted label: {} \n".format(preds[i]))
             print(test_sentence_context[i])
             print(test_sentence_attention[i])
             print("finished example: {} \n".format(i))

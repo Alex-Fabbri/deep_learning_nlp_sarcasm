@@ -46,6 +46,7 @@ class SarcasmLstmAttention:
         max_post_len = int(kwargs["max_post_len"])
         num_classes = int(num_classes)    
         attention_words = str_to_bool(kwargs["attention_words"])
+        attention_sentences = str_to_bool(kwargs["attention_sentences"])
 
         #S x N matrix of sentences (aka list of word indices)
         #B x S x N tensor of batches of posts
@@ -119,9 +120,14 @@ class SarcasmLstmAttention:
         l_hid = l_lstm_rr_s
         #LSTM w/ attn
         #now B x D
-        l_attn_rr_s = AttentionSentenceLayer([l_lstm_rr_s, l_mask_post_sents], num_hidden)        
-        l_lstm_rr_avg = WeightedAverageSentenceLayer([l_lstm_rr_s, l_attn_rr_s])
-        print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg)))
+        if attention_sentences:
+            l_attn_rr_s = AttentionSentenceLayer([l_lstm_rr_s, l_mask_post_sents], num_hidden)        
+            l_lstm_rr_avg = WeightedAverageSentenceLayer([l_lstm_rr_s, l_attn_rr_s])
+            print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg)))
+        else:
+            #l_attn_rr_s = AttentionSentenceLayer([l_lstm_rr_s, l_mask_post_sents], num_hidden)        
+            l_lstm_rr_avg = WeightedAverageSentenceLayer([l_lstm_rr_s, l_mask_post_sents])
+            
         l_hid = l_lstm_rr_avg
 
         # TODO
@@ -179,28 +185,6 @@ class SarcasmLstmAttention:
         #                              on_unused_input='warn')
 
         print('...')
-        #attention for words, B x S x N        
-         # TODO
-        #word_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_rr_w, l_mask_post_words], K,
-        #                                                              W_w = l_attention_words.W_w,
-        #                                                              u_w = l_attention_words.u_w,
-        #                                                              #b_w = l_attention_words.b_w,
-        #                                                              normalized=False))
-        #self.word_attention = theano.function([idxs_post,
-        #                                       mask_post_words],
-        #                                       word_attention,
-        #                                       allow_input_downcast=True,
-        #                                       on_unused_input='warn')
-
-        #attention for sentences, B x S
-        # TODO
-        #sentence_attention = lasagne.layers.get_output(l_attn_rr_s)
-        ##if add_biases:
-        ##    inputs = inputs[:-1]
-        #self.sentence_attention = theano.function(inputs,
-        #                                          sentence_attention,
-        #                                          allow_input_downcast=True,
-        #                                          on_unused_input='warn')
         print('finished compiling...')
     
     
@@ -237,6 +221,16 @@ class SarcasmLstmAttention:
         self.train = theano.function(inputs = [idxs_post, mask_post_words, mask_post_sents, y], outputs = cost, updates = grad_updates, allow_input_downcast=True,on_unused_input='warn')
         self.test = theano.function(inputs = [idxs_post, mask_post_words, mask_post_sents, y], outputs = val_acc_fn,allow_input_downcast=True,on_unused_input='warn')
         self.pred = theano.function(inputs = [idxs_post, mask_post_words, mask_post_sents],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
+        #attention for words, B x S x N        
+         # TODO
+        if attention_words:
+            word_attention = lasagne.layers.get_output(l_attention_words) 
+            self.sentence_attention_words = theano.function([idxs_post, mask_post_words, mask_post_sents],[word_attention,preds],allow_input_downcast=True, on_unused_input='warn') 
+        #attention for sentences, B x S
+        if attention_sentences:
+            sentence_attention = lasagne.layers.get_output(l_attn_rr_s)
+            self.sentence_attention_words = theano.function([idxs_post, mask_post_words, mask_post_sents],[sentence_attention,preds],allow_input_downcast=True, on_unused_input='warn') 
+
 
     def get_params(self):
         return lasagne.layers.get_all_param_values(self.network)

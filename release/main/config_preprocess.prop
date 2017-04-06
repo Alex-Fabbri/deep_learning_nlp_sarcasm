@@ -14,10 +14,13 @@ lastSent=False
 separate=True
 separate_attention_context=True
 separate_attention_response=True
+separate_attention_context_words=False
+separate_attention_response_words=False
 interaction=False
 # attention=True unless you want the basic word to word model. Attention_words=True if you want to do attention on the word level (in addition to the sentence level) (for now this is only for the concatenation models and not the stacked separate models)
 attention=True
 attention_words=False
+attention_sentences=True
 w2v_file=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_learning_tests_spring2017/lasagne/GoogleNews-vectors-negative300.bin
 w2v_type=bin
 num_hidden=256

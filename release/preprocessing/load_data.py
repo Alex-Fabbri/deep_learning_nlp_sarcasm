@@ -29,32 +29,32 @@ def load_data(target,config_file):
     both = str_to_bool(processor.both)
     top = str_to_bool(processor.topSim)
     lastSent = str_to_bool(processor.lastSent)
-    print(lastSent)
     attention = str_to_bool(processor.attention)
     separate = str_to_bool(processor.separate)
     batch_size = int(processor.batch_size)
     return_dict["lstm"] = processor.lstm
+    data_type = processor.data_type
 
 
     # get the train and validation data 
     if both == False:
         print("loading just response text\n")
-        train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext.TRAIN.' +   target  + '.pkl'
-        test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext.TEST.' + target +  '.pkl'
+        train_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.nocontext.TRAIN.' +   target  + '.pkl'
+        test_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.nocontext.TEST.' + target +  '.pkl'
         max_l = 200
     
     if both == True and top == False:
 
         if lastSent == True:
             print("loading last sentence context\n")
-            train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextlast.TRAIN.' +   target  + '.pkl'
-            test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextlast.TEST.' + target +  '.pkl'
+            train_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.contextlast.TRAIN.' +   target  + '.pkl'
+            test_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.contextlast.TEST.' + target +  '.pkl'
             max_l = 400
         else:
             print("loading fully concatenated context\n")
 
-            train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat.TRAIN.' +   target  + '.pkl'
-            test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat.TEST.' + target +  '.pkl'
+            train_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.contextcat.TRAIN.' +   target  + '.pkl'
+            test_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.contextcat.TEST.' + target +  '.pkl'
             max_l = 400
 
         
@@ -64,8 +64,8 @@ def load_data(target,config_file):
         if lastSent == True:
             print("Make up your mind! :P \n")
             quit()
-        train_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop.TRAIN.' +   target  + '.pkl'
-        test_file = path + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop.TEST.' + target +  '.pkl'
+        train_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.contexttop.TRAIN.' +   target  + '.pkl'
+        test_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.contexttop.TEST.' + target +  '.pkl'
         max_l = 400
 
     if separate == True:
@@ -74,18 +74,18 @@ def load_data(target,config_file):
         if top == False:
             if lastSent == True:
                 print("loading separate last sentence context\n")
-                train_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextseplast'  +'.TRAIN.' + target + '.pkl'
-                test_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextseplast'  + '.TEST.' + target + '.pkl'
+                train_file = path +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextseplast'  +'.TRAIN.' + target + '.pkl'
+                test_file = path +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextseplast'  + '.TEST.' + target + '.pkl'
                 max_l = 400
             else:
                 print("loading separate fully context\n")
-                train_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  +'.TRAIN.' + target + '.pkl'
-                test_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + target + '.pkl'
+                train_file = path +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextsep'  +'.TRAIN.' + target + '.pkl'
+                test_file = path +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextsep'  + '.TEST.' + target + '.pkl'
                 max_l = 400
         else:
             print("loading separate top sim context\n")
-            train_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  +'.TRAIN.' + target + '.pkl'
-            test_file = path +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  + '.TEST.' + target + '.pkl'
+            train_file = path +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextsepsim'  +'.TRAIN.' + target + '.pkl'
+            test_file = path +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextsepsim'  + '.TEST.' + target + '.pkl'
             max_l = 400
             
     print "loading data...",
@@ -112,6 +112,7 @@ def load_data(target,config_file):
     return_dict["max_sent_len_basic"] = max_l
     return_dict["max_sent_len"] = max_sent_len
     return_dict["max_post_len"] = max_post_len
+    print("this is the test file: {}\n".format(test_file))
     test_data = cPickle.load(open(test_file,'rb'))
     if(separate == True):
         print("This is separate\n")

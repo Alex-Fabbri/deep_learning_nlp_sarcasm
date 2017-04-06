@@ -295,13 +295,22 @@ class SarcasmLstmAttentionSeparate:
 
         ##attention for sentences, B x S
         ## TODO
-        #sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response)
-        ##if add_biases:
-        ##    inputs = inputs[:-1]
-        #self.sentence_attention = theano.function(inputs,
-        #                                          sentence_attention,
-        #                                          allow_input_downcast=True,
-        #                                          on_unused_input='warn')
+        if separate_attention_response:
+            sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response)
+            #if add_biases:
+            #    inputs = inputs[:-1]
+            self.sentence_attention_response = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
+                                                      sentence_attention,
+                                                      allow_input_downcast=True,
+                                                      on_unused_input='warn')
+        if separate_attention_context:
+            sentence_attention_context = lasagne.layers.get_output(l_attn_rr_s_context)
+            #if add_biases:
+            #    inputs = inputs[:-1]
+            self.sentence_attention_context = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
+                                                      sentence_attention_context,
+                                                      allow_input_downcast=True,
+                                                      on_unused_input='warn')
         print('finished compiling...')
     
     

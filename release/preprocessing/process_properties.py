@@ -9,6 +9,9 @@ class PreProcessor:
 	    header = "PropertySection"
 	    self.input = config.get(header, "input")
 	    self.output = config.get(header, "output")
+            self.vocab_file = config.get(header, "vocab_file")
+            self.data_type = config.get(header, "data_type")
+            self.test_type = config.get(header, "test_type")
 	    self.both = config.get(header,"both")
 	    self.topSim  = config.get(header,"topSim")
             self.separate = config.get(header,"separate")

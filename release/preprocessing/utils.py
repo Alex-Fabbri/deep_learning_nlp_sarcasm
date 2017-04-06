@@ -79,11 +79,11 @@ def load_txt_vec(fname, vocab):
    
     return word_vector
 
-def create_vocab(path):
+def create_vocab( vocab_file):
     
     cutoff = 2
     vocab = defaultdict(float)
-    train_file = path + 'sarcasm_v2_tab.txt'
+    train_file = vocab_file
     
     lines = open(train_file).readlines()
     raw_lines = [process_line(l) for l in lines ]
@@ -133,7 +133,8 @@ def read_data_file(data_file, max_l, is_train,both=False,topSim=False,lastSent=F
         for line in fin:
             line = line.strip()
             line = line.lower()
-            [label,text,context] = line.split('\t')
+
+            [label,context,text] = line.split('\t')
             # initially - just do with the original msg only 
             # later do both 
             if both == True and topSim == False:
@@ -177,7 +178,7 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim, last_S
     with open(data_file, "r") as fin:
         for line in fin:
             line = line.strip()
-            [label, text,context] = line.split('\t')
+            [label, context, text] = line.split('\t')
             current = text.lower()
             if(not top_Sim):
                 if(not last_Sent):
@@ -201,7 +202,7 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim, last_S
                 x2_words = x2_words[:max_x2]
                 change_count += 1
             
-            datum = {"y": int(label),
+            datum = {"y": int(float(label)),
                     "x1": current,
                     "x2": previous,
                     "x1_len": len(x1_words),
@@ -226,38 +227,38 @@ def convert(label):
     elif label.strip() == 'notsarc':
         return "0.0"
 
-def train_test(target,vocab,w2v,input,output,both=False,topSim=True, lastSent=False):
+def train_test(target,vocab,w2v,input,output,both=False,topSim=True, lastSent=False, data_type="ucsc.txt"):
     path = input + '/5folds/' + target + '/'
     both = str_to_bool(both)
     topSim = str_to_bool(topSim)
     lastSent = str_to_bool(lastSent)
     if topSim == False:
-    	train_file = path + 'ucsc.txt.train' + target
-    	test_file = path + 'ucsc.txt.test' + target
+    	train_file = path + data_type + '.train' + target
+    	test_file = path + data_type + '.test' + target
     elif topSim == True:
-    	train_file = path + 'ucsc.txt.train' + target +  '.topcontext' 
-    	test_file = path + 'ucsc.txt.test' + target + '.topcontext'
+    	train_file = path + data_type + '.train' + target +  '.topcontext' 
+    	test_file = path + data_type + '.test' + target + '.topcontext'
     max_l = 200
 
     if both == False:
-        output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.nocontext'  +'.TRAIN.' + target + '.pkl'
-        output_test_file = output + 'pkl/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TEST.' + target + '.pkl'
-        output_train_id_file = output  + '/ids/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TRAIN.' + target + '.id'
-        output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.nocontext'  + '.TEST.' + target + '.id'
+        output_train_file = output + '/pkl/1_cnn/w2v_300/' + data_type + '.nocontext'  +'.TRAIN.' + target + '.pkl'
+        output_test_file = output + 'pkl/1_cnn/w2v_300/' + data_type + '.nocontext'  + '.TEST.' + target + '.pkl'
+        output_train_id_file = output  + '/ids/1_cnn/w2v_300/' + data_type + '.nocontext'  + '.TRAIN.' + target + '.id'
+        output_test_id_file = output + '/ids/1_cnn/w2v_300/' + data_type + '.nocontext'  + '.TEST.' + target + '.id'
 
     if both == True and topSim == False:
         max_l = 400
         if lastSent == True:
-            output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextlast'  +'.TRAIN.' + target + '.pkl'
-            output_test_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextlast'  + '.TEST.' + target + '.pkl'
-            output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextlast'  + '.TRAIN.' + target + '.id'
-            output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextlast'  + '.TEST.' + target + '.id'
+            output_train_file = output + '/pkl/1_cnn/w2v_300/' + data_type + '.contextlast'  +'.TRAIN.' + target + '.pkl'
+            output_test_file = output + '/pkl/1_cnn/w2v_300/' +data_type +  '.contextlast'  + '.TEST.' + target + '.pkl'
+            output_train_id_file = output + '/ids/1_cnn/w2v_300/' + data_type + '.contextlast'  + '.TRAIN.' + target + '.id'
+            output_test_id_file = output + '/ids/1_cnn/w2v_300/' + data_type + '.contextlast'  + '.TEST.' + target + '.id'
 
         else:
-            output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat'  +'.TRAIN.' + target + '.pkl'
-            output_test_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TEST.' + target + '.pkl'
-            output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TRAIN.' + target + '.id'
-            output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contextcat'  + '.TEST.' + target + '.id'
+            output_train_file = output + '/pkl/1_cnn/w2v_300/' + data_type + '.contextcat'  +'.TRAIN.' + target + '.pkl'
+            output_test_file = output + '/pkl/1_cnn/w2v_300/' + data_type + '.contextcat'  + '.TEST.' + target + '.pkl'
+            output_train_id_file = output + '/ids/1_cnn/w2v_300/' + data_type + '.contextcat'  + '.TRAIN.' + target + '.id'
+            output_test_id_file = output + '/ids/1_cnn/w2v_300/' + data_type + '.contextcat'  + '.TEST.' + target + '.id'
 
     if both == True and topSim == True:
         max_l = 400
@@ -265,10 +266,10 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True, lastSent=Fa
             print("Make up your mind! :P \n")
             quit()
 
-        output_train_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop'  +'.TRAIN.' + target + '.pkl'
-        output_test_file = output + '/pkl/1_cnn/w2v_300/' + 'ucsc.contexttop'  + '.TEST.' + target + '.pkl'
-        output_train_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contexttop'  + '.TRAIN.' + target + '.id'
-        output_test_id_file = output + '/ids/1_cnn/w2v_300/' + 'ucsc.contexttop'  + '.TEST.' + target + '.id'
+        output_train_file = output + '/pkl/1_cnn/w2v_300/' + data_type + '.contexttop'  +'.TRAIN.' + target + '.pkl'
+        output_test_file = output + '/pkl/1_cnn/w2v_300/' + data_type + '.contexttop'  + '.TEST.' + target + '.pkl'
+        output_train_id_file = output + '/ids/1_cnn/w2v_300/' + data_type + '.contexttop'  + '.TRAIN.' + target + '.id'
+        output_test_id_file = output + '/ids/1_cnn/w2v_300/' + data_type + '.contexttop'  + '.TEST.' + target + '.id'
     
 
     np.random.seed(4321)
@@ -308,39 +309,40 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True, lastSent=Fa
     
     print "dataset created!"
 
-def train_test_separate(target,vocab,w2v,input,output,topSim,lastSent):
+def train_test_separate(target,vocab,w2v,input,output,topSim,lastSent, data_type):
 
     path = input + '/5folds/' + target + '/'
+    
     topSim = str_to_bool(topSim)
     lastSent = str_to_bool(lastSent)
     if topSim == False:
-    	train_file = path + 'ucsc.txt.train' + target
-    	test_file = path + 'ucsc.txt.test' + target
+    	train_file = path + data_type + '.train' + target
+    	test_file = path + data_type + '.test' + target
     elif topSim == True:
-    	train_file = path + 'ucsc.txt.train' + target +  '.topcontext' 
-    	test_file = path + 'ucsc.txt.test' + target + '.topcontext'
+    	train_file = path + data_type + '.train' + target +  '.topcontext' 
+    	test_file = path + data_type + '.test' + target + '.topcontext'
 
 
     if topSim == False:
         if lastSent == True:
-            output_train_file = output + '/pkl/2_cnn/w2v_300/' + 'ucsc.contextseplast'  +'.TRAIN.' + target + '.pkl'
-            output_test_file = output + '/pkl/2_cnn/w2v_300/' + 'ucsc.contextseplast'  + '.TEST.' + target + '.pkl'
-            output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextseplast'  + '.TRAIN.' + target + '.id'
-            output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextseplast'  + '.TEST.' + target + '.id'
+            output_train_file = output + '/pkl/2_cnn/w2v_300/' + data_type + '.contextseplast'  +'.TRAIN.' + target + '.pkl'
+            output_test_file = output + '/pkl/2_cnn/w2v_300/' + data_type + '.contextseplast'  + '.TEST.' + target + '.pkl'
+            output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + data_type + '.contextseplast'  + '.TRAIN.' + target + '.id'
+            output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + data_type + '.contextseplast'  + '.TEST.' + target + '.id'
 
         else:
-            output_train_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  +'.TRAIN.' + target + '.pkl'
-            output_test_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + target + '.pkl'
+            output_train_file = output +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextsep'  +'.TRAIN.' + target + '.pkl'
+            output_test_file = output +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextsep'  + '.TEST.' + target + '.pkl'
 
-            output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TRAIN.' + target + '.id'
-            output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsep'  + '.TEST.' + target + '.id'
+            output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + data_type + '.contextsep'  + '.TRAIN.' + target + '.id'
+            output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + data_type + '.contextsep'  + '.TEST.' + target + '.id'
 
     else:
-        output_train_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  +'.TRAIN.' + target + '.pkl'
-        output_test_file = output +  '/pkl/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  + '.TEST.' + target + '.pkl'
+        output_train_file = output +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextsepsim'  +'.TRAIN.' + target + '.pkl'
+        output_test_file = output +  '/pkl/2_cnn/w2v_300/' + data_type + '.contextsepsim'  + '.TEST.' + target + '.pkl'
 
-        output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  + '.TRAIN.' + target + '.id'
-        output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + 'ucsc.contextsepsim'  + '.TEST.' + target + '.id'
+        output_train_id_file = output +  '/ids/2_cnn/w2v_300/' + data_type + '.contextsepsim'  + '.TRAIN.' + target + '.id'
+        output_test_id_file = output +  '/ids/2_cnn/w2v_300/' + data_type + '.contextsepsim'  + '.TEST.' + target + '.id'
 
     
     max_x1 = 200

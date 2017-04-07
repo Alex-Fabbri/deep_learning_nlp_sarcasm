@@ -12,14 +12,24 @@ if __name__=="__main__":
     if processor.test_type == "5fold":
         print("5 fold cross validation\n")
         for fold in folds:
+            print("working on: {}\n".format(fold))
+            processor.set_target(fold)
             if(processor.separate == "True"):
-                train_test_separate(fold, vocab, w2v, processor.input, processor.output, processor.topSim, processor.lastSent, processor.data_type)
+                print("separate processing on fold\n")
+                train_test_separate(processor, vocab, w2v)
             else:
-                print("train_test")
-                #print(processor.lastSent)
+                print("train_test on fold\n")
                 # is the same whether or not using attention
-                train_test(fold, vocab, w2v, processor.input, processor.output, processor.both, processor.topSim, processor.lastSent,processor.data_type)
-    else:
+                train_test(processor, vocab, w2v)
+    if processor.test_type == "train_val_test":
+        processor.set_target("")
+        if(processor.separate == "True"):
+            print("separate processing\n")
+            train_test_separate(processor, vocab, w2v)
+        else:
+            print("train_test\n")
+            # is the same whether or not using attention
+            train_test(processor, vocab, w2v)
         print("train_val_test\n")
 
 

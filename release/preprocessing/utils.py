@@ -158,7 +158,7 @@ def read_data_file(data_file, max_l, is_train,both=False,topSim=False,lastSent=F
             if len(newWords) > max_l:
                 words = words[:max_l]
             #    change_count += 1
-            datum = {"y": int(label),
+            datum = {"y": int(float(label)),
                     "text": text,
                     "num_words": len(words)}
             queries.append(datum)
@@ -179,20 +179,20 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim, last_S
         for line in fin:
             line = line.strip()
             [label, context, text] = line.split('\t')
-            current = text.decode('latin1').lower()
+            current = text.decode('utf-8').lower()
             if(not top_Sim):
                 if(not last_Sent):
-                    previous = context.lower().encode('utf-8')
+                    previous = context.lower().decode('utf-8')
                 else:    
-                    previous = getLastSentence(context.encode('utf-8')).lower()
+                    previous = getLastSentence(context.decode('utf-8')).lower()
             else:
-                previous = context.lower().encode('utf-8')
+                previous = context.lower().decode('utf-8')
 
             x1_words = []
             x2_words = []
-            for index1, word1 in enumerate(nltk.word_tokenize(current)):
+            for index1, word1 in enumerate(nltk.word_tokenize(previous)):
                 x1_words.append(word1)
-            for index2, word2 in enumerate(nltk.word_tokenize(previous)):
+            for index2, word2 in enumerate(nltk.word_tokenize(current)):
                 x2_words.append(word2)
              
             if len(x1_words) > max_x1:
@@ -203,8 +203,8 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim, last_S
                 change_count += 1
             
             datum = {"y": int(float(label)),
-                    "x1": current,
-                    "x2": previous,
+                    "x1": previous,
+                    "x2": current,
                     "x1_len": len(x1_words),
                     "x2_len": len(x2_words)}
             queries.append(datum)
@@ -227,11 +227,21 @@ def convert(label):
     elif label.strip() == 'notsarc':
         return "0.0"
 
-def train_test(target,vocab,w2v,input,output,both=False,topSim=True, lastSent=False, data_type="ucsc.txt"):
-    path = input + '/5folds/' + target + '/'
-    both = str_to_bool(both)
-    topSim = str_to_bool(topSim)
-    lastSent = str_to_bool(lastSent)
+def train_test(processor,vocab,w2v):
+    target = processor.target
+    input = processor.input
+    output = processor.output
+    both = str_to_bool(processor.both)
+    topSim = str_to_bool(processor.topSim)
+    lastSent = str_to_bool(processor.lastSent)
+    data_type = processor.data_type
+
+    if target == "":
+        path = input + '/'
+    else:
+        path = input + '/5folds/' + target + '/'
+    print("The path to the input is: {}\n".format(path))
+
     if topSim == False:
     	train_file = path + data_type + '.train' + target
     	test_file = path + data_type + '.test' + target
@@ -309,12 +319,21 @@ def train_test(target,vocab,w2v,input,output,both=False,topSim=True, lastSent=Fa
     
     print "dataset created!"
 
-def train_test_separate(target,vocab,w2v,input,output,topSim,lastSent, data_type):
+def train_test_separate(processor,vocab,w2v):
 
-    path = input + '/5folds/' + target + '/'
-    
-    topSim = str_to_bool(topSim)
-    lastSent = str_to_bool(lastSent)
+    target = processor.target
+    input = processor.input
+    output = processor.output
+    topSim = str_to_bool(processor.topSim)
+    lastSent = str_to_bool(processor.lastSent)
+    data_type = processor.data_type
+
+    if target == "":
+        path = input + '/'
+    else:
+        path = input + '/5folds/' + target + '/'
+    print("The path to the input is: {}\n".format(path))
+
     if topSim == False:
     	train_file = path + data_type + '.train' + target
     	test_file = path + data_type + '.test' + target

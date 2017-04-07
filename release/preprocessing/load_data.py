@@ -21,9 +21,8 @@ from lasagne.layers import get_output_shape
 from release.preprocessing.process_properties import PreProcessor
 from release.preprocessing.utils import str_to_bool 
 
-def load_data(target,config_file):
+def load_data(processor):
 
-    processor = PreProcessor(config_file)
     return_dict = processor.__dict__
     path = processor.output
     both = str_to_bool(processor.both)
@@ -35,6 +34,8 @@ def load_data(target,config_file):
     return_dict["lstm"] = processor.lstm
     data_type = processor.data_type
 
+    target = processor.target
+    print(target)
 
     # get the train and validation data 
     if both == False:
@@ -91,6 +92,7 @@ def load_data(target,config_file):
     print "loading data...",
     #logger.error("loading data...");
     
+    print("the train_file is: {}\n".format(train_file))
     x = cPickle.load(open(train_file,"rb"))
     train_data, W, word_idx_map, max_sent_len = x[0], x[1], x[2], x[3]
     return_dict["W"] = W
@@ -283,11 +285,11 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_post_length):
     y = []
     max_sentence_length = 50
     for query in train_data:
-        text1 = query["x1"]
-        text2 = query["x2"]
+        context = query["x1"]
+        response = query["x2"]
         y_val = query["y"]
         sentences_arr = []
-        sentences = nltk.sent_tokenize(text1)
+        sentences = nltk.sent_tokenize(context)
         if len(sentences) > max_post_length:
             continue
         for sentence in sentences:
@@ -300,9 +302,9 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_post_length):
                 else:
                     out.append(1)
             sentences_arr.append(out)   
-        X.append(sentences_arr)
+        X_context.append(sentences_arr)
         sentences_arr = []
-        sentences = nltk.sent_tokenize(text2)
+        sentences = nltk.sent_tokenize(response)
         # TODO, how to deal with long context
         #if len(sentences) > max_post_length:
         #    continue
@@ -317,7 +319,7 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_post_length):
                     out.append(1)
             sentences_arr.append(out)   
 
-        X_context.append(sentences_arr)
+        X.append(sentences_arr)
         y.append(y_val)
     return X_context, X, y
 

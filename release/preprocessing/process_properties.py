@@ -34,3 +34,5 @@ class PreProcessor:
         except:
             print("check the parameters that you entered in the config file")
             exit()
+    def set_target(self,target):
+        self.target = target

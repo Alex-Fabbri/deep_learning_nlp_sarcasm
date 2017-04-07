@@ -15,16 +15,17 @@ if __name__ == "__main__":
     log_file = open("output/logs/log_file_{}".format(time_stamp), "w+")
 
     lambda_ws = [0, .0000001, .000001, .00001, .0001]
-    dropouts = [0.25, 0, 0.5, 0.75]
-    recurrent_dimensions = [100, 50, 200, 300]
+    dropouts = [0, 0.25, 0.75]
+    recurrent_dimensions = [50, 100, 200, 300]
     patiences = [2,5,10]
-    processor = PreProcessor(sys.argv[1])
 
+    processor = PreProcessor(sys.argv[1])
     targets = ["one", "two", "three", "four", "five"]
     for lambda_w in lambda_ws:
         for dropout in dropouts:
             for recurrent_dimension in recurrent_dimensions:
                 for patience in patiences:
+
                     if processor.test_type  == "5fold":
                         for target in targets:
                             print("working on target: {}\n".format(target))
@@ -46,7 +47,7 @@ if __name__ == "__main__":
                             np.save('output/preds/preds_{}_{}_{}_{}_{}_{}'.format(target, time_stamp, lambda_w, dropout, recurrent_dimension, patience), preds)
                             print("finished target: {}\n".format(target))
 
-                    if processor.test_type == "train_val_test":
+                    else if processor.test_type == "train_val_test":
                         print("train_val_test!\n")
                         processor.set_target("")
                         training, y, testing, test_y, kwargs = load_data(processor)

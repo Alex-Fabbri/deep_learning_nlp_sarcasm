@@ -47,7 +47,7 @@ if __name__ == "__main__":
                             np.save('output/preds/preds_{}_{}_{}_{}_{}_{}'.format(target, time_stamp, lambda_w, dropout, recurrent_dimension, patience), preds)
                             print("finished target: {}\n".format(target))
 
-                    else if processor.test_type == "train_val_test":
+                    elif processor.test_type == "train_val_test":
                         print("train_val_test!\n")
                         processor.set_target("")
                         training, y, testing, test_y, kwargs = load_data(processor)

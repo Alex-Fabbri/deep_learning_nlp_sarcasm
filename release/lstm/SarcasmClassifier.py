@@ -36,6 +36,7 @@ class SarcasmClassifier(BaseEstimator):
 
         self.num_epochs = int(kwargs["num_epochs"])
         self.batch_size = int(kwargs["batch_size"])
+        self.patience_increase = int(kwargs["patience"])
         if kwargs["separate"] == "False":
             if kwargs["attention"] == "True":
                 print("lstm with attention, not separate\n")
@@ -60,7 +61,7 @@ class SarcasmClassifier(BaseEstimator):
         best = 0
 
         patience = 1000  # look as this many examples regardless
-        patience_increase = 2  # wait this much longer when a new best is
+        patience_increase = self.patience_increase  # wait this much longer when a new best is
                                # found
         improvement_threshold = 0.995  # a relative improvement of this much is
                                        # considered significant

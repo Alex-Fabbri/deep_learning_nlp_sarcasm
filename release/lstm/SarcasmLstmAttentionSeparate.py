@@ -46,6 +46,8 @@ class SarcasmLstmAttentionSeparate:
         max_seq_len = int(max_sent_len)
         max_post_len = int(kwargs["max_post_len"])
         num_classes = int(num_classes)    
+        dropout = float(kwargs["dropout"])
+        lambda_w = float(kwargs["lambda_w"])
         separate_attention_context = str_to_bool(kwargs["separate_attention_context"])
         separate_attention_response = str_to_bool(kwargs["separate_attention_response"])
         interaction = str_to_bool(kwargs["interaction"])
@@ -135,6 +137,7 @@ class SarcasmLstmAttentionSeparate:
                                                grad_clipping=grad_clip,
                                                mask_input=l_mask_context_sents)
         
+        l_lstm_rr_s_context = lasagne.layers.DropoutLayer(l_lstm_rr_s_context,p=dropout)
         if interaction:
             #l_hid_context = l_lstm_rr_s_context
             if separate_attention_context:
@@ -226,6 +229,7 @@ class SarcasmLstmAttentionSeparate:
                                                    grad_clipping=grad_clip,
                                                    mask_input=l_mask_response_sents)
             
+        l_lstm_rr_s_response = lasagne.layers.DropoutLayer(l_lstm_rr_s_response,p=dropout)
         #LSTM w/ attn
         #now B x D
         if separate_attention_response:
@@ -319,6 +323,7 @@ class SarcasmLstmAttentionSeparate:
 
         # Compute gradient updates
         params = lasagne.layers.get_all_params(network)
+        cost += lambda_w*apply_penalty(params, l2)
         # grad_updates = lasagne.updates.nesterov_momentum(cost, params,learn_rate)
         grad_updates = lasagne.updates.adam(cost, params)
         #learn_rate = .01

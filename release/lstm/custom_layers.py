@@ -172,9 +172,8 @@ class CustomLSTMEncoder(lasagne.layers.LSTMLayer):
 
         # Because scan iterates over the first dimension we dimshuffle to
         # (n_time_steps, n_batch, n_features)
-        #input = input.reshape((16, input.shape[0]/16, input.shape[1])).dimshuffle((1,0,2))
         input = input.dimshuffle(1, 0, 'x')
-        #input = input#.dimshuffle(1, 0, 2)
+        #input = input.dimshuffle(1, 0, 2)
         seq_len, num_batch, _ = input.shape
 
         # Stack input weight matrices into a (num_inputs, 4*num_units)
@@ -437,7 +436,6 @@ class CustomLSTMDecoder(lasagne.layers.LSTMLayer):
 
         # Because scan iterates over the first dimension we dimshuffle to
         # (n_time_steps, n_batch, n_features)
-        #input = input.reshape((16, input.shape[0]/16, input.shape[1])).dimshuffle((1,0,2))
         input = input.dimshuffle(1, 0, 'x')
         #input = input.dimshuffle(1, 0, 2)
         seq_len, num_batch, _ = input.shape

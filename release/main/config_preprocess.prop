@@ -20,7 +20,7 @@ separate_attention_response=False
 separate_attention_context_words=False
 separate_attention_response_words=False
 interaction=False
-conditional_attention=True
+conditional_attention=False
 end_attention=False
 # attention=True unless you want the basic word to word model. Attention_words=True if you want to do attention on the word level (in addition to the sentence level) (for now this is only for the concatenation models and not the stacked separate models)
 attention=False

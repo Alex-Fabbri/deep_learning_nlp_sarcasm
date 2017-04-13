@@ -134,13 +134,13 @@ class deep_mind:
         #                              nonlinearity=lasagne.nonlinearities.rectify,
         #                              num_leading_axes=2)
         #    
-        l_lstm_rr_s_context = lasagne.layers.LSTMLayer(l_avg_rr_s_context, num_hidden,
-                                               nonlinearity=lasagne.nonlinearities.tanh,
-                                               grad_clipping=grad_clip,
-                                               mask_input=l_mask_context_sents)
-        
-        l_lstm_rr_s_context = lasagne.layers.DropoutLayer(l_lstm_rr_s_context,p=dropout)
-        #l_lstm_rr_s_context = l_avg_rr_s_context
+        #l_lstm_rr_s_context = lasagne.layers.LSTMLayer(l_avg_rr_s_context, num_hidden,
+        #                                       nonlinearity=lasagne.nonlinearities.tanh,
+        #                                       grad_clipping=grad_clip,
+        #                                       mask_input=l_mask_context_sents)
+        #
+        #l_lstm_rr_s_context = lasagne.layers.DropoutLayer(l_lstm_rr_s_context,p=dropout)
+        l_lstm_rr_s_context = l_avg_rr_s_context
         if interaction:
             #l_hid_context = l_lstm_rr_s_context
             if separate_attention_context:
@@ -219,21 +219,21 @@ class deep_mind:
         #                              nonlinearity=lasagne.nonlinearities.rectify,
         #                              num_leading_axes=2)
         #    
-        if interaction:
-            print("interaction\n")
-            # add some cell init
-            l_lstm_rr_s_response = lasagne.layers.LSTMLayer(l_avg_rr_s_response, num_hidden,
-                                                   nonlinearity=lasagne.nonlinearities.tanh,
-                                                   grad_clipping=grad_clip,cell_init=l_hid_context,
-                                                   mask_input=l_mask_response_sents)
-        else:
-            l_lstm_rr_s_response = lasagne.layers.LSTMLayer(l_avg_rr_s_response, num_hidden,
-                                                   nonlinearity=lasagne.nonlinearities.tanh,
-                                                   grad_clipping=grad_clip,
-                                                   mask_input=l_mask_response_sents)
-            
-        l_lstm_rr_s_response = lasagne.layers.DropoutLayer(l_lstm_rr_s_response,p=dropout)
-        #l_lstm_rr_s_response = l_avg_rr_s_response
+        #if interaction:
+        #    print("interaction\n")
+        #    # add some cell init
+        #    l_lstm_rr_s_response = lasagne.layers.LSTMLayer(l_avg_rr_s_response, num_hidden,
+        #                                           nonlinearity=lasagne.nonlinearities.tanh,
+        #                                           grad_clipping=grad_clip,cell_init=l_hid_context,
+        #                                           mask_input=l_mask_response_sents)
+        #else:
+        #    l_lstm_rr_s_response = lasagne.layers.LSTMLayer(l_avg_rr_s_response, num_hidden,
+        #                                           nonlinearity=lasagne.nonlinearities.tanh,
+        #                                           grad_clipping=grad_clip,
+        #                                           mask_input=l_mask_response_sents)
+        #    
+        #l_lstm_rr_s_response = lasagne.layers.DropoutLayer(l_lstm_rr_s_response,p=dropout)
+        l_lstm_rr_s_response = l_avg_rr_s_response
         #LSTM w/ attn
         #now B x D
         if separate_attention_response:

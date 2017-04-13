@@ -403,6 +403,7 @@ def iterate_minibatches(inputs,inputs2, targets, batch_size, shuffle=False):
         yield inputs[excerpt], inputs2[excerpt], targets[excerpt]
 
 def split_train_test(X_tuple, y, train_size=.9, random_state=123):
+    np.random.seed(random_state)
     tuple_len = len(X_tuple)
     x_shape = X_tuple[0].shape[0]
     #x_shape = X_tuple[0].eval().shape[0]

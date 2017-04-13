@@ -17,6 +17,7 @@ import timeit
 import time
 import lasagne
 from lasagne.layers import get_output_shape
+from lasagne.regularization import apply_penalty, l2
 
 
 
@@ -40,6 +41,8 @@ class SarcasmLstm:
         grad_clip = int(grad_clip)
         max_seq_len = int(max_sent_len_basic)
         num_classes = int(num_classes)    
+        dropout = float(kwargs["dropout"])
+        lambda_w = float(kwargs["lambda_w"])
 
 
         index = T.lscalar() 
@@ -65,7 +68,7 @@ class SarcasmLstm:
         print(" l_emb shape: {}\n".format(get_output_shape(l_emb)))
     
         # add droput
-        l_emb = lasagne.layers.DropoutLayer(l_emb, p=0.2)
+        #l_emb = lasagne.layers.DropoutLayer(l_emb, p=.2)
     
         # Use orthogonal Initialization for LSTM gates
         gate_params = lasagne.layers.recurrent.Gate(
@@ -84,7 +87,7 @@ class SarcasmLstm:
             ingate=gate_params, forgetgate=gate_params, cell=cell_params,
             outgate=gate_params, learn_init=True
         )
-        l_fwd = lasagne.layers.DropoutLayer(l_fwd,p=0.5)
+        l_fwd = lasagne.layers.DropoutLayer(l_fwd,p=dropout)
         print(" forward shape: {}\n".format(get_output_shape(l_fwd)))
         if kwargs["lstm"] == "bi":
             gate_params_bwd = lasagne.layers.recurrent.Gate(
@@ -103,13 +106,13 @@ class SarcasmLstm:
                      outgate=gate_params_bwd, learn_init=True,
                      backwards=True
             )
-            l_bwd = lasagne.layers.DropoutLayer(l_bwd,p=0.5)
+            l_bwd = lasagne.layers.DropoutLayer(l_bwd,p=dropout)
             print(" backward shape: {}\n".format(get_output_shape(l_bwd)))
 
             # concat and dropout
             l_concat = lasagne.layers.ConcatLayer([l_fwd, l_bwd])
             #l_concat = lasagne.layers.ElemwiseSumLayer([l_fwd, l_bwd])
-            l_concat_dropout = lasagne.layers.DropoutLayer(l_concat,p=0.5)
+            l_concat_dropout = lasagne.layers.DropoutLayer(l_concat,p=dropout)
             print(" concat shape: {}\n".format(get_output_shape(l_concat)))
         else:
             l_concat_dropout = l_fwd
@@ -130,6 +133,8 @@ class SarcasmLstm:
 
         # Compute gradient updates
         params = lasagne.layers.get_all_params(network)
+
+        cost += lambda_w*apply_penalty(params, l2)
         # grad_updates = lasagne.updates.nesterov_momentum(cost, params,learn_rate)
         grad_updates = lasagne.updates.adam(cost, params)
         #learn_rate = .01

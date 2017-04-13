@@ -21,12 +21,12 @@ from sklearn.base import BaseEstimator
 from release.lstm.SarcasmLstm import SarcasmLstm
 from release.lstm.SarcasmLstmAttention import SarcasmLstmAttention
 from release.lstm.SarcasmLstmAttentionSeparate import SarcasmLstmAttentionSeparate
+from release.lstm.deep_mind import deep_mind 
 from release.preprocessing.utils import str_to_bool 
 from release.preprocessing.load_data import split_train_test
 from release.preprocessing.load_data import get_batch
 from sklearn.metrics import precision_recall_fscore_support as score
 from datetime import datetime
-
 
 
 
@@ -45,8 +45,12 @@ class SarcasmClassifier(BaseEstimator):
                 print("basic lstm\n")
                 self.classifier = SarcasmLstm(**kwargs) 
         else:
-            self.classifier = SarcasmLstmAttentionSeparate(**kwargs) 
-            print("Attention with separating context and response!\n")
+            if kwargs["conditional_attention"] == "True" or kwargs["end_attention"] == "True":
+                self.classifier = deep_mind(**kwargs)
+                print("deep mind \n")
+            else:
+                self.classifier = SarcasmLstmAttentionSeparate(**kwargs) 
+                print("Attention with separating context and response!\n")
 
     def fit(self, X, y, log_file):
 

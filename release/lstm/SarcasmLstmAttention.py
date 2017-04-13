@@ -47,6 +47,8 @@ class SarcasmLstmAttention:
         num_classes = int(num_classes)    
         attention_words = str_to_bool(kwargs["attention_words"])
         attention_sentences = str_to_bool(kwargs["attention_sentences"])
+        dropout = float(kwargs["dropout"])
+        lambda_w = float(kwargs["lambda_w"])
 
         #S x N matrix of sentences (aka list of word indices)
         #B x S x N tensor of batches of posts
@@ -117,6 +119,7 @@ class SarcasmLstmAttention:
                                                grad_clipping=grad_clip,
                                                mask_input=l_mask_post_sents)
         
+        l_lstm_rr_s = lasagne.layers.DropoutLayer(l_lstm_rr_s,p=dropout)
         l_hid = l_lstm_rr_s
         #LSTM w/ attn
         #now B x D
@@ -202,6 +205,7 @@ class SarcasmLstmAttention:
 
         # Compute gradient updates
         params = lasagne.layers.get_all_params(network)
+        cost += lambda_w*apply_penalty(params, l2)
         # grad_updates = lasagne.updates.nesterov_momentum(cost, params,learn_rate)
         grad_updates = lasagne.updates.adam(cost, params)
         #learn_rate = .01
@@ -224,11 +228,11 @@ class SarcasmLstmAttention:
         #attention for words, B x S x N        
          # TODO
         if attention_words:
-            word_attention = lasagne.layers.get_output(l_attention_words) 
+            word_attention = lasagne.layers.get_output(l_attention_words, deterministic=True) 
             self.sentence_attention_words = theano.function([idxs_post, mask_post_words, mask_post_sents],[word_attention,preds],allow_input_downcast=True, on_unused_input='warn') 
         #attention for sentences, B x S
         if attention_sentences:
-            sentence_attention = lasagne.layers.get_output(l_attn_rr_s)
+            sentence_attention = lasagne.layers.get_output(l_attn_rr_s, deterministic=True)
             self.sentence_attention_words = theano.function([idxs_post, mask_post_words, mask_post_sents],[sentence_attention,preds],allow_input_downcast=True, on_unused_input='warn') 
 
 

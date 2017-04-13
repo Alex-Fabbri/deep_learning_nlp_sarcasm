@@ -343,7 +343,7 @@ class SarcasmLstmAttentionSeparate:
         self.test = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents, y], outputs = val_acc_fn,allow_input_downcast=True,on_unused_input='warn')
         self.pred = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents, idxs_response, mask_response_words, mask_response_sents],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
         if separate_attention_response:
-            sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response)
+            sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response, deterministic=True)
             #if add_biases:
             #    inputs = inputs[:-1]
             self.sentence_attention_response = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
@@ -351,7 +351,7 @@ class SarcasmLstmAttentionSeparate:
                                                       allow_input_downcast=True,
                                                       on_unused_input='warn')
         if separate_attention_context:
-            sentence_attention_context = lasagne.layers.get_output(l_attn_rr_s_context)
+            sentence_attention_context = lasagne.layers.get_output(l_attn_rr_s_context, deterministic=True)
             #if add_biases:
             #    inputs = inputs[:-1]
             self.sentence_attention_context = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
@@ -359,12 +359,12 @@ class SarcasmLstmAttentionSeparate:
                                                       allow_input_downcast=True,
                                                       on_unused_input='warn')
         if separate_attention_response_words:
-            word_attention = lasagne.layers.get_output(l_attention_words_response) 
+            word_attention = lasagne.layers.get_output(l_attention_words_response, deterministic=True) 
             self.sentence_attention_response_words = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],[word_attention,preds], 
                     allow_input_downcast=True,
                     on_unused_input='warn')
         if separate_attention_context_words:
-            word_attention_context = lasagne.layers.get_output(l_attention_words_context) 
+            word_attention_context = lasagne.layers.get_output(l_attention_words_context, deterministic = True) 
             self.sentence_attention_context_words = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],[word_attention_context,preds], 
                     allow_input_downcast=True,
                     on_unused_input='warn')

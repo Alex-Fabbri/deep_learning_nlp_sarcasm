@@ -20,6 +20,8 @@ class PreProcessor:
             self.separate_attention_context_words = config.get(header, "separate_attention_context_words")
             self.separate_attention_response_words = config.get(header, "separate_attention_response_words")
             self.interaction = config.get(header, "interaction")
+            self.conditional_attention = config.get(header, "conditional_attention")
+            self.end_attention = config.get(header, "end_attention")
             self.lastSent = config.get(header,"lastSent")
 	    self.w2v_file = config.get(header,"w2v_file")
             self.w2v_type = config.get(header,"w2v_type")

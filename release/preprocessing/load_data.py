@@ -36,6 +36,7 @@ def load_data(processor):
 
     target = processor.target
     print(target)
+    print("The path to the input is: {}\n".format(path))
 
     # get the train and validation data 
     if both == False:
@@ -261,7 +262,7 @@ def text_to_indx_sentence(train_data, word_idx_map, max_post_length):
         text = query["text"]
         y_val = query["y"]
         sentences_arr = []
-        sentences = nltk.sent_tokenize(text.decode('latin'))
+        sentences = nltk.sent_tokenize(text.decode('utf-8'))
         if len(sentences) > max_post_length:
             continue
         for sentence in sentences:

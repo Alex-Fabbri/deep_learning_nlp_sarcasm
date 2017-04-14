@@ -45,6 +45,7 @@ class SarcasmLstmAttentionSeparate:
         grad_clip = int(grad_clip)
         max_seq_len = int(max_sent_len)
         max_post_len = int(kwargs["max_post_len"])
+        max_context_len = int(kwargs["max_sentences_context"])
         num_classes = int(num_classes)    
         dropout = float(kwargs["dropout"])
         lambda_w = float(kwargs["lambda_w"])
@@ -92,10 +93,10 @@ class SarcasmLstmAttentionSeparate:
         #idxs_context, mask_context_words, mask_context_sents
                 
         #now use this as an input to an LSTM
-        l_idxs_context = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),
+        l_idxs_context = lasagne.layers.InputLayer(shape=(None, max_context_len, max_sent_len),
                                             input_var=idxs_context)
-        l_mask_context_words = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),input_var=mask_context_words)
-        l_mask_context_sents = lasagne.layers.InputLayer(shape=(None, max_post_len),
+        l_mask_context_words = lasagne.layers.InputLayer(shape=(None, max_context_len, max_sent_len),input_var=mask_context_words)
+        l_mask_context_sents = lasagne.layers.InputLayer(shape=(None, max_context_len),
                                                 input_var=mask_context_sents)
 
         #if add_biases:

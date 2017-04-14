@@ -33,6 +33,8 @@ class PreProcessor:
             self.attention = config.get(header,"attention")
             self.attention_words = config.get(header,"attention_words")
             self.attention_sentences = config.get(header, "attention_sentences")
+            self.max_sentences_response = config.get(header, "max_sentences_response")
+            self.max_sentences_context = config.get(header, "max_sentences_context")
         except:
             print("check the parameters that you entered in the config file")
             exit()

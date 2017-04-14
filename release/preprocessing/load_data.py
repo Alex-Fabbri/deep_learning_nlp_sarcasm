@@ -100,14 +100,19 @@ def load_data(processor):
 
 
     max_sent_len = 50
-    max_post_len = 15 
-
-    if both == True:
-        if top == True or lastSent == True:
-            max_post_len = 16
-        else:
-            max_post_len = 30
-
+#    max_post_len = 5 
+#
+#    if both == True:
+#        if top == True or lastSent == True:
+#            max_post_len = 6 
+#            print("why are we doing this??\n")
+#        else:
+#            max_post_len = 10 
+#            print("we shouldn't be in this for the current tests\n")
+#
+    max_post_len = int(processor.max_sentences_response)
+    max_context_len = int(processor.max_sentences_context)
+    
     #if separate == True:
     #    max_post_len = 30
     print("max post len: {}\n".format(max_post_len))            
@@ -122,13 +127,18 @@ def load_data(processor):
 
         # The separate model currently only deals with the word and sentence heirarchy in the attention model.
         # 
-        X_train_indx_context,X_train_indx_response,y_train = text_to_indx_sentence_separate(train_data, word_idx_map, max_post_len)
-        X_train_indx_pad_context, X_train_indices_mask_sents_context, X_train_indices_mask_posts_context = text_to_indx_mask(X_train_indx_context, max_sent_len, max_post_len)
+        X_train_indx_context,X_train_indx_response,y_train = text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len)
+        X_test_indx_context, X_test_indx_response, y_test = text_to_indx_sentence_separate(test_data, word_idx_map, max_context_len)
+
+        # use max_post_context variable
+        #max_post_len = 15
+        X_train_indx_pad_context, X_train_indices_mask_sents_context, X_train_indices_mask_posts_context = text_to_indx_mask(X_train_indx_context, max_sent_len, max_context_len)
         X_train_indx_pad_response, X_train_indices_mask_sents_response, X_train_indices_mask_posts_response = text_to_indx_mask(X_train_indx_response, max_sent_len, max_post_len)
+        print(X_train_indx_pad_context.shape)
+        print(X_train_indx_pad_response.shape)
 
 
-        X_test_indx_context, X_test_indx_response, y_test = text_to_indx_sentence_separate(test_data, word_idx_map, max_post_len)
-        X_test_indx_pad_context, X_test_indices_mask_sents_context, X_test_indices_mask_posts_context = text_to_indx_mask(X_test_indx_context, max_sent_len, max_post_len)
+        X_test_indx_pad_context, X_test_indices_mask_sents_context, X_test_indices_mask_posts_context = text_to_indx_mask(X_test_indx_context, max_sent_len, max_context_len)
         X_test_indx_pad_response, X_test_indices_mask_sents_response, X_test_indices_mask_posts_response = text_to_indx_mask(X_test_indx_response, max_sent_len, max_post_len)
 
 
@@ -280,7 +290,7 @@ def text_to_indx_sentence(train_data, word_idx_map, max_post_length):
         y.append(y_val)
     return X,y
 
-def text_to_indx_sentence_separate(train_data, word_idx_map, max_post_length):
+def text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len):
     X = []
     X_context = []
     y = []
@@ -291,8 +301,8 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_post_length):
         y_val = query["y"]
         sentences_arr = []
         sentences = nltk.sent_tokenize(context)
-        if len(sentences) > max_post_length:
-            continue
+        if len(sentences) > max_context_len:
+            sentences = sentences[-max_context_len:]
         for sentence in sentences:
             out = []
             words = nltk.word_tokenize(sentence)

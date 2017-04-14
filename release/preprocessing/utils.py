@@ -179,7 +179,7 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim, last_S
         for line in fin:
             line = line.strip()
             [label, context, text] = line.split('\t')
-            current = text.decode('utf-8').lower()
+            current = text.decode('latin1').lower()
             if(not top_Sim):
                 if(not last_Sent):
                     previous = context.lower().decode('utf-8')

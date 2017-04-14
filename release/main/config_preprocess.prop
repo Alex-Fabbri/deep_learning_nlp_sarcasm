@@ -15,8 +15,8 @@ topSim=False
 lastSent=False
 # separate=True is used for the stacked lstms, uses full context if topSim=False and lastSent=False
 separate=True
-separate_attention_context=False
-separate_attention_response=False
+separate_attention_context=True
+separate_attention_response=True
 separate_attention_context_words=False
 separate_attention_response_words=False
 interaction=False
@@ -36,3 +36,5 @@ num_hidden=256
 batch_size=16
 num_epochs=25
 lstm=single
+max_sentences_response=15
+max_sentences_context=15

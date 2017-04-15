@@ -207,7 +207,7 @@ def load_data(processor):
             #print(indices_mask_sents[0])
             #print(indices_mask_posts[0])
 
-    return training,train_set_y,testing,test_set_y,return_dict
+    return training,train_set_y,testing,test_set_y,return_dict, test_data
     
 def text_to_indx_mask(X_train_indx, max_sent_len, max_post_len):
     X_train_indx_pad = []
@@ -251,7 +251,9 @@ def text_to_indx(train_data, word_idx_map, max_l):
     y = []
     for query in train_data:
         #text = query["text"].split()
-        text = nltk.word_tokenize(query["text"])
+        text = query["text"]
+        text = text.strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+        text = nltk.word_tokenize(text)
         text = text[:max_l]
         y_val = query["y"]
         out = []
@@ -272,7 +274,13 @@ def text_to_indx_sentence(train_data, word_idx_map, max_post_length):
         text = query["text"]
         y_val = query["y"]
         sentences_arr = []
-        sentences = nltk.sent_tokenize(text.decode('utf-8'))
+       
+        try:
+            text = text.decode('utf-8').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+        except:
+            text = text.decode('latin').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+
+        sentences = nltk.sent_tokenize(text)
         if len(sentences) > max_post_length:
             continue
         for sentence in sentences:
@@ -300,6 +308,10 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len):
         response = query["x2"]
         y_val = query["y"]
         sentences_arr = []
+        try:
+            context = context.decode('utf-8').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+        except:
+            context = context.strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
         sentences = nltk.sent_tokenize(context)
         if len(sentences) > max_context_len:
             sentences = sentences[-max_context_len:]
@@ -315,6 +327,11 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len):
             sentences_arr.append(out)   
         X_context.append(sentences_arr)
         sentences_arr = []
+        try:
+            response = response.decode('utf-8').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+        except:
+            response = response.decode('latin1').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+
         sentences = nltk.sent_tokenize(response)
         # TODO, how to deal with long context
         #if len(sentences) > max_post_length:

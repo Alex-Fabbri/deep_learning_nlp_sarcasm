@@ -38,7 +38,7 @@ if __name__ == "__main__":
                             log_file.write("working on target: {} at {} with lambda_w: {} dropout: {} recurrent_dimension: {} patience: {}\n".format(target, time_stamp,lambda_w, dropout, recurrent_dimension, patience))
 
                             processor.set_target(target)
-                            training, y, testing, test_y, kwargs = load_data(processor)
+                            training, y, testing, test_y, kwargs, test_data = load_data(processor)
                             kwargs.update({'lambda_w' : lambda_w, 'dropout': dropout, "num_hidden": recurrent_dimension, "patience": patience})
                             classifier = SarcasmClassifier(**kwargs)
                             classifier.fit(training, y, log_file)
@@ -57,7 +57,7 @@ if __name__ == "__main__":
                         print("train_val_test!\n")
                         processor.set_target("")
                         log_file.write("working on train_val_test at {} with lambda_w: {} dropout: {} recurrent_dimension: {} patience: {}\n".format(time_stamp,lambda_w, dropout, recurrent_dimension, patience))
-                        training, y, testing, test_y, kwargs = load_data(processor)
+                        training, y, testing, test_y, kwargs, test_data = load_data(processor)
                         kwargs.update({'lambda_w' : lambda_w, 'dropout': dropout, "num_hidden": recurrent_dimension, "patience": patience})
                         classifier = SarcasmClassifier(**kwargs)
                         classifier.fit(training, y, log_file)

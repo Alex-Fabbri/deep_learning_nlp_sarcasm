@@ -37,4 +37,4 @@ batch_size=16
 num_epochs=25
 lstm=single
 max_sentences_response=15
-max_sentences_context=15
+max_sentences_context=10

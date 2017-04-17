@@ -36,10 +36,11 @@ class SarcasmLstmAttentionSeparate:
                 num_classes=2, 
                 **kwargs):
 
+        print("sarcas lstm attention separate  \n")
         W = W
         V = len(W)
         K = int(K)
-        print("this is the value of K: {}\n".format(K))
+        #print("this is the value of K: {}\n".format(K))
         num_hidden = int(num_hidden)
         batch_size = int(batch_size)
         grad_clip = int(grad_clip)
@@ -343,20 +344,20 @@ class SarcasmLstmAttentionSeparate:
         self.train = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents, y], outputs = cost, updates = grad_updates, allow_input_downcast=True,on_unused_input='warn')
         self.test = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents, y], outputs = val_acc_fn,allow_input_downcast=True,on_unused_input='warn')
         self.pred = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents, idxs_response, mask_response_words, mask_response_sents],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
-        if separate_attention_response:
-            sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response, deterministic=True)
-            #if add_biases:
-            #    inputs = inputs[:-1]
-            self.sentence_attention_response = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
-                                                      [sentence_attention, preds],
-                                                      allow_input_downcast=True,
-                                                      on_unused_input='warn')
         if separate_attention_context:
             sentence_attention_context = lasagne.layers.get_output(l_attn_rr_s_context, deterministic=True)
             #if add_biases:
             #    inputs = inputs[:-1]
             self.sentence_attention_context = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
                                                       [sentence_attention_context,preds],
+                                                      allow_input_downcast=True,
+                                                      on_unused_input='warn')
+        if separate_attention_response:
+            sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response, deterministic=True)
+            #if add_biases:
+            #    inputs = inputs[:-1]
+            self.sentence_attention_response = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
+                                                      [sentence_attention,sentence_attention_context, preds],
                                                       allow_input_downcast=True,
                                                       on_unused_input='warn')
         if separate_attention_response_words:

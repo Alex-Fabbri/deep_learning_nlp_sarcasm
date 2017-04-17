@@ -19,6 +19,7 @@ if __name__ == "__main__":
     patience = 10
     dropout = 0.5
     lambda_w = .000001
+    filename = sys.argv[1]
     processor = PreProcessor(sys.argv[2])
 
     processor.set_target("")
@@ -27,11 +28,10 @@ if __name__ == "__main__":
     kwargs.update({'lambda_w' : lambda_w, 'dropout': dropout, "num_hidden": recurrent_dimension, "patience": patience})
     classifier = SarcasmClassifier(**kwargs)
     attention_classifier = classifier.classifier
-    filename = sys.argv[1]
     with np.load(filename) as f:
         param_values = [f['arr_%d' % i] for i in range(len(f.files))]
     attention_classifier.set_params(param_values)
-    test_sentence_attention,preds = attention_classifier.sentence_attention_response(*testing)
+    test_sentence_attention, preds = attention_classifier.sentence_attention_response(*testing)
     test_sentence_context,preds = attention_classifier.sentence_attention_context(*testing)
     types = pickle.load(open("data_final/type2/types.pkl", "rb")) 
     context_texts = []

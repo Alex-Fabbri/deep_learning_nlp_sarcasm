@@ -123,12 +123,12 @@ def load_data(processor):
     print("this is the test file: {}\n".format(test_file))
     test_data = cPickle.load(open(test_file,'rb'))
     if(separate == True):
-        print("This is separate\n")
+        print("This is separate loading\n")
 
         # The separate model currently only deals with the word and sentence heirarchy in the attention model.
         # 
-        X_train_indx_context,X_train_indx_response,y_train = text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len)
-        X_test_indx_context, X_test_indx_response, y_test = text_to_indx_sentence_separate(test_data, word_idx_map, max_context_len)
+        X_train_indx_context,X_train_indx_response,y_train = text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len, data_type)
+        X_test_indx_context, X_test_indx_response, y_test = text_to_indx_sentence_separate(test_data, word_idx_map, max_context_len, data_type)
 
         # use max_post_context variable
         #max_post_len = 15
@@ -298,7 +298,7 @@ def text_to_indx_sentence(train_data, word_idx_map, max_post_length):
         y.append(y_val)
     return X,y
 
-def text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len):
+def text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len, data_type):
     X = []
     X_context = []
     y = []
@@ -308,11 +308,15 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len):
         response = query["x2"]
         y_val = query["y"]
         sentences_arr = []
-        try:
-            context = context.decode('utf-8').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
-        except:
-            context = context.strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
-        sentences = nltk.sent_tokenize(context)
+        if "tweet" in data_type:
+            sentences = context.split(' ||| ')
+        else:
+
+            try:
+                context = context.decode('utf-8').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+            except:
+                context = context.strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+            sentences = nltk.sent_tokenize(context)
         if len(sentences) > max_context_len:
             sentences = sentences[-max_context_len:]
         for sentence in sentences:
@@ -330,22 +334,32 @@ def text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len):
         try:
             response = response.decode('utf-8').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
         except:
-            response = response.decode('latin1').strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
+            response = response.strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
 
-        sentences = nltk.sent_tokenize(response)
-        # TODO, how to deal with long context
-        #if len(sentences) > max_post_length:
-        #    continue
-        for sentence in sentences:
+        if "tweet" in data_type:
+            words = nltk.word_tokenize(response)
             out = []
-            words = nltk.word_tokenize(sentence)
-            words = words[:max_sentence_length]
             for word in words:
                 if word in word_idx_map:
                     out.append(word_idx_map[word])
                 else:
                     out.append(1)
             sentences_arr.append(out)   
+        else:
+            sentences = nltk.sent_tokenize(response)
+            # TODO, how to deal with long context
+            #if len(sentences) > max_post_length:
+            #    continue
+            for sentence in sentences:
+                out = []
+                words = nltk.word_tokenize(sentence)
+                words = words[:max_sentence_length]
+                for word in words:
+                    if word in word_idx_map:
+                        out.append(word_idx_map[word])
+                    else:
+                        out.append(1)
+                sentences_arr.append(out)   
 
         X.append(sentences_arr)
         y.append(y_val)

@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 import nltk
 from datetime import datetime
+from sklearn.metrics import precision_recall_fscore_support as score
 
 
 if __name__ == "__main__":
@@ -31,8 +32,13 @@ if __name__ == "__main__":
     with np.load(filename) as f:
         param_values = [f['arr_%d' % i] for i in range(len(f.files))]
     attention_classifier.set_params(param_values)
-    test_sentence_attention, preds = attention_classifier.sentence_attention_response(*testing)
+    test_sentence_attention = attention_classifier.sentence_attention_response(*testing)
     test_sentence_context,preds = attention_classifier.sentence_attention_context(*testing)
+    precision, recall, fscore, support = score(test_y, preds)
+
+    log_file.write("precision : {}".format(precision))
+    log_file.write("recall : {}".format(recall))
+    log_file.write("fscore : {}".format(fscore))
     types = pickle.load(open("data_final/type2/types.pkl", "rb")) 
     context_texts = []
     response_texts = []
@@ -62,7 +68,7 @@ if __name__ == "__main__":
 
     with open("attention_output.txt", "w") as output:
         for i in range(test_sentence_context.shape[0]):
-            output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], types[i], context_lens[i], context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_lens[i], response_texts[i], str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')))
+            output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i],types[i], context_lens[i], context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_lens[i], response_texts[i] , str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')))
             #print("example: {} \n".format(i))
             #print("gold label: {} \n".format(test_y[i]))
             #print("predicted label: {} \n".format(preds[i]))

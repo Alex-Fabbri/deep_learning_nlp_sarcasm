@@ -36,32 +36,22 @@ class SarcasmLstmAttentionSeparate:
                 num_classes=2, 
                 **kwargs):
 
-        print("sarcas lstm attention separate  \n")
         W = W
         V = len(W)
         K = int(K)
-        #print("this is the value of K: {}\n".format(K))
         num_hidden = int(num_hidden)
         batch_size = int(batch_size)
         grad_clip = int(grad_clip)
         max_seq_len = int(max_sent_len)
         max_post_len = int(kwargs["max_post_len"])
-        max_context_len = int(kwargs["max_sentences_context"])
         num_classes = int(num_classes)    
-        dropout = float(kwargs["dropout"])
-        lambda_w = float(kwargs["lambda_w"])
         separate_attention_context = str_to_bool(kwargs["separate_attention_context"])
         separate_attention_response = str_to_bool(kwargs["separate_attention_response"])
         interaction = str_to_bool(kwargs["interaction"])
-        separate_attention_context_words = str_to_bool(kwargs["separate_attention_context_words"])
-        separate_attention_response_words = str_to_bool(kwargs["separate_attention_response_words"])
 
         print("this is the separate_attention_context: {}\n".format(separate_attention_context))
 
         print("this is the separate_attention_response: {}\n".format(separate_attention_response))
-        print("this is the separate_attention_context_words: {}\n".format(separate_attention_context_words))
-
-        print("this is the separate_attention_response_words: {}\n".format(separate_attention_response_words))
         print("this is the interaction: {}\n".format(interaction))
 
 
@@ -94,10 +84,10 @@ class SarcasmLstmAttentionSeparate:
         #idxs_context, mask_context_words, mask_context_sents
                 
         #now use this as an input to an LSTM
-        l_idxs_context = lasagne.layers.InputLayer(shape=(None, max_context_len, max_sent_len),
+        l_idxs_context = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),
                                             input_var=idxs_context)
-        l_mask_context_words = lasagne.layers.InputLayer(shape=(None, max_context_len, max_sent_len),input_var=mask_context_words)
-        l_mask_context_sents = lasagne.layers.InputLayer(shape=(None, max_context_len),
+        l_mask_context_words = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),input_var=mask_context_words)
+        l_mask_context_sents = lasagne.layers.InputLayer(shape=(None, max_post_len),
                                                 input_var=mask_context_sents)
 
         #if add_biases:
@@ -111,12 +101,9 @@ class SarcasmLstmAttentionSeparate:
 #        l_hid_context = l_emb_rr_w
         #CBOW w/attn
         #now B x S x D
-        if separate_attention_context_words:
-            l_attention_words_context = AttentionWordLayer([l_emb_rr_w_context, l_mask_context_words], K)
-            #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_context)))
-            l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context,l_attention_words_context])
-        else:
-            l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context, l_mask_context_words])
+        #l_attention_words_context = AttentionWordLayer([l_emb_rr_w_context, l_mask_context_words], K)
+        #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_context)))
+        l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context, l_mask_context_words])
         ##concats = l_avg_rr_s_words_context
         ##concats = [l_avg_rr_s_words_context]
         l_avg_rr_s_context = l_avg_rr_s_words_context
@@ -139,7 +126,6 @@ class SarcasmLstmAttentionSeparate:
                                                grad_clipping=grad_clip,
                                                mask_input=l_mask_context_sents)
         
-        l_lstm_rr_s_context = lasagne.layers.DropoutLayer(l_lstm_rr_s_context,p=dropout)
         if interaction:
             #l_hid_context = l_lstm_rr_s_context
             if separate_attention_context:
@@ -192,15 +178,9 @@ class SarcasmLstmAttentionSeparate:
 #        l_hid_response = l_emb_rr_w
         #CBOW w/attn
         #now B x S x D
-        if separate_attention_response_words:
-            l_attention_words_response = AttentionWordLayer([l_emb_rr_w_response, l_mask_response_words], K)
-            #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_response)))
-            l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response,l_attention_words_response])
-        else:
-            l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response, l_mask_response_words])
         #l_attention_words_response = AttentionWordLayer([l_emb_rr_w_response, l_mask_response_words], K)
         #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_response)))
-        #l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response, l_mask_response_words])
+        l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response, l_mask_response_words])
         ##concats = l_avg_rr_s_words_response
         ##concats = [l_avg_rr_s_words_response]
         l_avg_rr_s_response = l_avg_rr_s_words_response
@@ -231,7 +211,6 @@ class SarcasmLstmAttentionSeparate:
                                                    grad_clipping=grad_clip,
                                                    mask_input=l_mask_response_sents)
             
-        l_lstm_rr_s_response = lasagne.layers.DropoutLayer(l_lstm_rr_s_response,p=dropout)
         #LSTM w/ attn
         #now B x D
         if separate_attention_response:
@@ -302,8 +281,20 @@ class SarcasmLstmAttentionSeparate:
 
         print('...')
         #attention for words, B x S x N        
+         # TODO
+        #word_attention = lasagne.layers.get_output(AttentionWordLayer([l_emb_rr_w, l_mask_response_words], K,
+        #                                                              W_w = l_attention_words_response.W_w,
+        #                                                              u_w = l_attention_words_response.u_w,
+        #                                                              #b_w = l_attention_words_response.b_w,
+        #                                                              normalized=False))
+        #self.word_attention = theano.function([idxs_response,
+        #                                       mask_response_words],
+        #                                       word_attention,
+        #                                       allow_input_downcast=True,
+        #                                       on_unused_input='warn')
 
         ##attention for sentences, B x S
+        ## TODO
         print('finished compiling...')
     
     
@@ -311,6 +302,7 @@ class SarcasmLstmAttentionSeparate:
             l_concat = l_hid_response
         else:
             l_concat = lasagne.layers.ConcatLayer([l_hid_context,l_hid_response])
+        l_concat = lasagne.layers.DropoutLayer(l_concat,p=0.5)
         network = lasagne.layers.DenseLayer(
             l_concat,
             num_units=num_classes,
@@ -321,11 +313,11 @@ class SarcasmLstmAttentionSeparate:
         output = lasagne.layers.get_output(network)
 
         # Define objective function (cost) to minimize, mean crossentropy error
-        cost = lasagne.objectives.categorical_crossentropy(output, y).mean()
-
-        # Compute gradient updates
         params = lasagne.layers.get_all_params(network)
+        cost = lasagne.objectives.categorical_crossentropy(output, y).mean()
+        lambda_w = .000001
         cost += lambda_w*apply_penalty(params, l2)
+
         # grad_updates = lasagne.updates.nesterov_momentum(cost, params,learn_rate)
         grad_updates = lasagne.updates.adam(cost, params)
         #learn_rate = .01
@@ -344,32 +336,22 @@ class SarcasmLstmAttentionSeparate:
         self.train = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents, y], outputs = cost, updates = grad_updates, allow_input_downcast=True,on_unused_input='warn')
         self.test = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents, y], outputs = val_acc_fn,allow_input_downcast=True,on_unused_input='warn')
         self.pred = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents, idxs_response, mask_response_words, mask_response_sents],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
-        if separate_attention_context:
-            sentence_attention_context = lasagne.layers.get_output(l_attn_rr_s_context, deterministic=True)
-            #if add_biases:
-            #    inputs = inputs[:-1]
-            self.sentence_attention_context = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
-                                                      [sentence_attention_context,preds],
-                                                      allow_input_downcast=True,
-                                                      on_unused_input='warn')
         if separate_attention_response:
-            sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response, deterministic=True)
+            sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response)
             #if add_biases:
             #    inputs = inputs[:-1]
             self.sentence_attention_response = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
-                                                      [sentence_attention,sentence_attention_context, preds],
+                                                      sentence_attention,
                                                       allow_input_downcast=True,
                                                       on_unused_input='warn')
-        if separate_attention_response_words:
-            word_attention = lasagne.layers.get_output(l_attention_words_response, deterministic=True) 
-            self.sentence_attention_response_words = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],[word_attention,preds], 
-                    allow_input_downcast=True,
-                    on_unused_input='warn')
-        if separate_attention_context_words:
-            word_attention_context = lasagne.layers.get_output(l_attention_words_context, deterministic = True) 
-            self.sentence_attention_context_words = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],[word_attention_context,preds], 
-                    allow_input_downcast=True,
-                    on_unused_input='warn')
+        if separate_attention_context:
+            sentence_attention_context = lasagne.layers.get_output(l_attn_rr_s_context)
+            #if add_biases:
+            #    inputs = inputs[:-1]
+            self.sentence_attention_context = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
+                                                      [sentence_attention_context, preds],
+                                                      allow_input_downcast=True,
+                                                      on_unused_input='warn')
 
     def get_params(self):
         return lasagne.layers.get_all_param_values(self.network)
@@ -386,4 +368,3 @@ def load(model, filename):
     param_keys = map(lambda x: 'arr_' + str(x), sorted([int(i[4:]) for i in params.keys()]))
     param_values = [params[i] for i in param_keys]
     lasagne.layers.set_all_param_values(model.network, param_values)
-        

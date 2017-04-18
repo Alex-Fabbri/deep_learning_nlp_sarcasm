@@ -35,7 +35,6 @@ def load_data(processor):
     data_type = processor.data_type
 
     target = processor.target
-    print(target)
     print("The path to the input is: {}\n".format(path))
 
     # get the train and validation data 
@@ -129,6 +128,8 @@ def load_data(processor):
         # 
         X_train_indx_context,X_train_indx_response,y_train = text_to_indx_sentence_separate(train_data, word_idx_map, max_context_len, data_type)
         X_test_indx_context, X_test_indx_response, y_test = text_to_indx_sentence_separate(test_data, word_idx_map, max_context_len, data_type)
+        print(X_test_indx_context[0])
+        
 
         # use max_post_context variable
         #max_post_len = 15

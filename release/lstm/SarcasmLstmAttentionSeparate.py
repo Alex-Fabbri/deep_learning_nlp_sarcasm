@@ -48,11 +48,18 @@ class SarcasmLstmAttentionSeparate:
         separate_attention_context = str_to_bool(kwargs["separate_attention_context"])
         separate_attention_response = str_to_bool(kwargs["separate_attention_response"])
         interaction = str_to_bool(kwargs["interaction"])
+        separate_attention_context_words = str_to_bool(kwargs["separate_attention_context_words"])
+        separate_attention_response_words = str_to_bool(kwargs["separate_attention_response_words"])
+
 
         print("this is the separate_attention_context: {}\n".format(separate_attention_context))
 
         print("this is the separate_attention_response: {}\n".format(separate_attention_response))
         print("this is the interaction: {}\n".format(interaction))
+
+        print("this is the separate_attention_context_words: {}\n".format(separate_attention_context_words))
+
+        print("this is the separate_attention_response_words: {}\n".format(separate_attention_response_words))
 
 
         #S x N matrix of sentences (aka list of word indices)
@@ -101,12 +108,15 @@ class SarcasmLstmAttentionSeparate:
 #        l_hid_context = l_emb_rr_w
         #CBOW w/attn
         #now B x S x D
-        #l_attention_words_context = AttentionWordLayer([l_emb_rr_w_context, l_mask_context_words], K)
-        #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_context)))
-        l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context, l_mask_context_words])
-        ##concats = l_avg_rr_s_words_context
-        ##concats = [l_avg_rr_s_words_context]
-        l_avg_rr_s_context = l_avg_rr_s_words_context
+        if separate_attention_context_words:
+            l_attention_words_context = AttentionWordLayer([l_emb_rr_w_context, l_mask_context_words], K)
+            l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context,l_attention_words_context])
+            l_avg_rr_s_context = l_avg_rr_s_words_context
+        else:
+            print("no context on the words \n \n \n ")
+
+            l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context, l_mask_context_words])
+            l_avg_rr_s_context = l_avg_rr_s_words_context
 
         # concats not relevant here, was just frames, sentiment etc for other task.
             
@@ -179,11 +189,13 @@ class SarcasmLstmAttentionSeparate:
         #CBOW w/attn
         #now B x S x D
         #l_attention_words_response = AttentionWordLayer([l_emb_rr_w_response, l_mask_response_words], K)
-        #print(" attention word layer shape: {}\n".format(get_output_shape(l_attention_words_response)))
-        l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response, l_mask_response_words])
-        ##concats = l_avg_rr_s_words_response
-        ##concats = [l_avg_rr_s_words_response]
-        l_avg_rr_s_response = l_avg_rr_s_words_response
+        if separate_attention_response_words:
+            l_attention_words_response = AttentionWordLayer([l_emb_rr_w_response, l_mask_response_words], K)
+            l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response,l_attention_words_response])
+            l_avg_rr_s_response = l_avg_rr_s_words_response
+        else:
+            l_avg_rr_s_words_response = WeightedAverageWordLayer([l_emb_rr_w_response, l_mask_response_words])
+            l_avg_rr_s_response = l_avg_rr_s_words_response
 
         # concats not relevant here, was just frames, sentiment etc for other task.
             

@@ -44,6 +44,11 @@ class SarcasmLstmAttentionSeparate:
         grad_clip = int(grad_clip)
         max_seq_len = int(max_sent_len)
         max_post_len = int(kwargs["max_post_len"])
+        max_len = max(max_seq_len, max_post_len)
+
+        max_seq_len = max_len
+        max_post_len = max_len
+
         num_classes = int(num_classes)    
         separate_attention_context = str_to_bool(kwargs["separate_attention_context"])
         separate_attention_response = str_to_bool(kwargs["separate_attention_response"])
@@ -362,6 +367,22 @@ class SarcasmLstmAttentionSeparate:
             #    inputs = inputs[:-1]
             self.sentence_attention_context = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
                                                       [sentence_attention_context, preds],
+                                                      allow_input_downcast=True,
+                                                      on_unused_input='warn')
+        if separate_attention_response_words:
+            sentence_attention_words = lasagne.layers.get_output(l_attention_words_response)
+            #if add_biases:
+            #    inputs = inputs[:-1]
+            self.sentence_attention_response_words = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
+                                                      sentence_attention_words,
+                                                      allow_input_downcast=True,
+                                                      on_unused_input='warn')
+        if separate_attention_context_words:
+            sentence_attention_context_words = lasagne.layers.get_output(l_attention_words_context)
+            #if add_biases:
+            #    inputs = inputs[:-1]
+            self.sentence_attention_context_words = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
+                                                      sentence_attention_context_words,
                                                       allow_input_downcast=True,
                                                       on_unused_input='warn')
 

@@ -318,7 +318,9 @@ class SarcasmLstmAttentionSeparate:
         if interaction:
             l_concat = l_hid_response
         else:
-            l_concat = lasagne.layers.ConcatLayer([l_hid_context,l_hid_response])
+            #l_concat = lasagne.layers.ConcatLayer([l_hid_context,l_hid_response])
+            l_concat = l_hid_response
+
         l_concat = lasagne.layers.DropoutLayer(l_concat,p=0.5)
         network = lasagne.layers.DenseLayer(
             l_concat,

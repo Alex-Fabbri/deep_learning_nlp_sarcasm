@@ -25,15 +25,10 @@ if __name__=="__main__":
         processor.set_target("")
         if(processor.separate == "True"):
             print("separate processing\n")
+            #only separate is used for final results!!!
             train_test_separate(processor, vocab, w2v)
         else:
             print("train_test\n")
             # is the same whether or not using attention
             train_test(processor, vocab, w2v)
         print("train_val_test\n")
-
-
-            
-
-
-

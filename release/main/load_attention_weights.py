@@ -34,8 +34,9 @@ if __name__ == "__main__":
     attention_classifier.set_params(param_values)
     test_sentence_attention = attention_classifier.sentence_attention_response(*testing)
     test_sentence_context,preds = attention_classifier.sentence_attention_context(*testing)
-    sentence_attention_response_words1 = attention_classifier.sentence_attention_response_words(*testing)
-    sentence_attention_context_words1 = attention_classifier.sentence_attention_context_words(*testing)
+    #sentence_attention_response_words1 = attention_classifier.sentence_attention_response_words(*testing)
+    #sentence_attention_context_words1 = attention_classifier.sentence_attention_context_words(*testing)
+
     #print(sentence_attention_context_words1.shape)
     #print(str(sentence_attention_context_words1[0]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '))
     #print(type(sentence_attention_context_words1[0]))
@@ -48,7 +49,7 @@ if __name__ == "__main__":
     log_file.write("precision : {}".format(precision))
     log_file.write("recall : {}".format(recall))
     log_file.write("fscore : {}".format(fscore))
-    types = pickle.load(open("data_final/type2/types.pkl", "rb")) 
+    #types = pickle.load(open("data_final/type2/types.pkl", "rb")) 
     context_texts = []
     response_texts = []
     context_lens = []
@@ -93,8 +94,10 @@ if __name__ == "__main__":
         response_texts.append(response_sents)
     with open("attention_output.txt", "w") as output:
         for i in range(test_sentence_context.shape[0]):
-            output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], context_lens[i],context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), context_words[i], str(sentence_attention_context_words1[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '),response_lens[i],response_texts[i], str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_words[i],str(sentence_attention_response_words1[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')))
+            output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], context_lens[i],context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), context_words[i],response_lens[i],response_texts[i], str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_words[i],))
 
+        #for i in range(test_sentence_context.shape[0]):
+        #    output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], context_lens[i],context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), context_words[i],response_lens[i],response_texts[i], str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_words[i],str(sentence_attention_response_words1[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')))
         #    #print("example: {} \n".format(i))
         #    #print("gold label: {} \n".format(test_y[i]))
         #    #print("predicted label: {} \n".format(preds[i]))

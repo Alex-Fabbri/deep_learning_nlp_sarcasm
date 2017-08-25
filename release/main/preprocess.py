@@ -4,6 +4,7 @@ import sys
 
 
 if __name__=="__main__":
+    np.random.seed(1234)
     processor = PreProcessor(sys.argv[1])
     vocab = create_vocab(processor.vocab_file)
     w2v = loadVectors(vocab,processor.w2v_file,processor.w2v_type)

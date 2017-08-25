@@ -50,13 +50,13 @@ class SarcasmClassifier(BaseEstimator):
                 print("deep mind \n")
             else:
                 self.classifier = SarcasmLstmAttentionSeparate(**kwargs) 
-                print("Attention with separating context and response!\n")
+                print("separate context and response!\n")
 
     def fit(self, X, y, log_file):
 
         print("starting training")
         early_stopping_heldout = .9
-        X, X_heldout, y, y_heldout = split_train_test(X, y, train_size=early_stopping_heldout, random_state=123)
+        X, X_heldout, y, y_heldout = split_train_test(X, y, train_size=early_stopping_heldout, random_state=1234)
         #num_batches = len(X) // self.batch_size
         #best = 0
         train_size = X[0].shape[0]

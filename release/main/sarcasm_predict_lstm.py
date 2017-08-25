@@ -10,6 +10,7 @@ from datetime import datetime
 
 if __name__ == "__main__":
 
+    np.random.seed(1234)
     targets = ["one", "two", "three", "four", "five"]
     time_stamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
     log_file = open("output/logs/log_file_{}".format(time_stamp), "w+")

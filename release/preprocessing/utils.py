@@ -134,7 +134,10 @@ def read_data_file(data_file, max_l, is_train,both=False,topSim=False,lastSent=F
             line = line.strip()
             line = line.lower()
 
-            [label,context,text] = line.split('\t')
+            try:
+                [label,context,text] = line.split('\t')
+            except:
+                [label,context,text,y,z] = line.split('\t')
             # initially - just do with the original msg only 
             # later do both 
             if both == True and topSim == False:
@@ -178,7 +181,10 @@ def read_data_file_separate(data_file, max_x1, max_x2, is_train, top_Sim, last_S
     with open(data_file, "r") as fin:
         for line in fin:
             line = line.strip()
-            [label, context, text] = line.split('\t')
+            try:
+                [label,context,text] = line.split('\t')
+            except:
+                [label,context,text,y,z] = line.split('\t')
             current = text.decode('latin1').lower()
             if(not top_Sim):
                 if(not last_Sent):

@@ -1,0 +1,41 @@
+[PropertySection]
+#input=../preprocessing/input/
+input=data_final/type2/
+output=../preprocessing/output/
+vocab_file=../preprocessing/input/sarcasm_v2_tab.txt
+#vocab_file=/Users/alexfabbri/Desktop/school/Spring2017/research/research_deep_learning_tests_spring2017/deep_learning_nlp_sarcasm/release/preprocessing/input/sarcasm_v2_tab.txt
+#data_type=ucsc_sarcasm_orig
+#data_type=ucsc.txt
+data_type=sarcasm_v2_tab.txt.ttv
+#test_type = train_val_test or 5fold
+#test_type=5fold
+test_type=train_val_test
+# both = True means use context together with response as one concatenated text. Uses full context if topSim=False and lastSent=False
+both=False
+topSim=False
+lastSent=False
+# separate=True is used for the stacked lstms, uses full context if topSim=False and lastSent=False
+separate=True
+separate_attention_context=True
+separate_attention_response=True
+separate_attention_context_words=False
+separate_attention_response_words=False
+interaction=False
+conditional_attention=False
+end_attention=False
+# attention=True unless you want the basic word to word model. Attention_words=True if you want to do attention on the word level (in addition to the sentence level) (for now this is only for the concatenation models and not the stacked separate models)
+attention=False
+attention_words=False
+attention_sentences=False
+w2v_file=/Users/alexfabbri/Documents/resources/GoogleNews-vectors-negative300.bin
+w2v_type=bin
+K=300
+#w2v_file=/Users/alexfabbri/Documents/resources/glove.6B.100d.txt
+#w2v_type=txt
+#K=100
+num_hidden=256
+batch_size=16
+num_epochs=25
+lstm=single
+max_sentences_response=15
+max_sentences_context=10

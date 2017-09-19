@@ -19,11 +19,14 @@ if __name__ == "__main__":
     #dropouts = [0, 0.5, 0.25, 0.75]
     #recurrent_dimensions = [50, 100, 200, 300]
     #patiences = [2,5,10]
-
-    recurrent_dimensions = [100]
+    recurrent_dimensions = [100,200,300]
+    dropouts = [0.25, 0.5, 0.75]
+    lambda_ws = [.0000001, .000001, .00001, .0001]
     patiences = [10]
-    dropouts = [0.5]
-    lambda_ws = [.000001]
+
+    #recurrent_dimensions = [100]
+    #dropouts = [0.5]
+    #lambda_ws = [.000001]
 
     
     processor = PreProcessor(sys.argv[1])

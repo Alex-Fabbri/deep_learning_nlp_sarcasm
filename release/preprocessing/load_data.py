@@ -42,7 +42,7 @@ def load_data(processor):
         print("loading just response text\n")
         train_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.nocontext.TRAIN.' +   target  + '.pkl'
         test_file = path + '/pkl/1_cnn/w2v_300/' + data_type + '.nocontext.TEST.' + target +  '.pkl'
-        max_l = 200
+        max_l = 100 
     
     if both == True and top == False:
 

@@ -98,7 +98,8 @@ def create_vocab( vocab_file):
 def process_line(line):
    
     line = line.decode('utf-8').strip()
-    [x,y,z,context, irony] = line.split('\t')
+    [x,context, irony] = line.split('\t')
+    #[x,y,z,context, irony] = line.split('\t')
     '''
          we only need to build unigram model
      '''

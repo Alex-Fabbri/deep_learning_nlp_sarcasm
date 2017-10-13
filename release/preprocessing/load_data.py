@@ -94,6 +94,7 @@ def load_data(processor):
     
     print("the train_file is: {}\n".format(train_file))
     x = cPickle.load(open(train_file,"rb"))
+    #print(x)
     train_data, W, word_idx_map, max_sent_len = x[0], x[1], x[2], x[3]
     return_dict["W"] = W
 
@@ -252,7 +253,8 @@ def text_to_indx(train_data, word_idx_map, max_l):
     y = []
     for query in train_data:
         #text = query["text"].split()
-        text = query["text"]
+        text = query["text"].decode('latin1')
+        #text = query["x2"].decode('latin1')
         text = text.strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')
         text = nltk.word_tokenize(text)
         text = text[:max_l]

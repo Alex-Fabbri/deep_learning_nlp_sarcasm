@@ -312,7 +312,7 @@ class deep_mind:
         #l_hypo_linear = CustomDense(l_hid_response, K,
         #                                                W=l_premise_linear.W, b=l_premise_linear.b,
         #                                                                                nonlinearity=lasagne.nonlinearities.linear)
-        encoder = CustomLSTMEncoder(l_hid_context, K, peepholes=False, mask_input=l_mask_context_sents)
+        encoder = CustomLSTMEncoder(l_hid_context, int(K), peepholes=False, mask_input=l_mask_context_sents)
         decoder = CustomLSTMDecoder(l_hid_response, K, cell_init=encoder, peepholes=False, mask_input=l_mask_response_sents,encoder_mask_input=l_mask_context_sents,
                                                                                     attention=True, word_by_word=True)
     

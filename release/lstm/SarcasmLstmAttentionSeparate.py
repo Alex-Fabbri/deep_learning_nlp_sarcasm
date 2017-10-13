@@ -333,7 +333,10 @@ class SarcasmLstmAttentionSeparate:
 
         # Define objective function (cost) to minimize, mean crossentropy error
         params = lasagne.layers.get_all_params(network)
-        cost = lasagne.objectives.categorical_crossentropy(output, y).mean()
+        #cost = lasagne.objectives.categorical_crossentropy(output, y).mean()
+        weights_per_label = theano.shared(lasagne.utils.floatX([0.2, 0.4]))
+        weights = weights_per_label[y]  # This is a bit non-obvious
+        cost = lasagne.objectives.aggregate(lasagne.objectives.categorical_crossentropy(output, y).mean(), weights=weights)
         lambda_w = .000001
         cost += lambda_w*apply_penalty(params, l2)
 

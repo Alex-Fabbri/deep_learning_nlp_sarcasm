@@ -114,6 +114,7 @@ class SarcasmLstmAttentionSeparate:
         #CBOW w/attn
         #now B x S x D
         if separate_attention_context_words:
+            print("context on the wordssssss \n")
             l_attention_words_context = AttentionWordLayer([l_emb_rr_w_context, l_mask_context_words], K)
             l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context,l_attention_words_context])
             l_avg_rr_s_context = l_avg_rr_s_words_context
@@ -123,57 +124,53 @@ class SarcasmLstmAttentionSeparate:
             l_avg_rr_s_words_context = WeightedAverageWordLayer([l_emb_rr_w_context, l_mask_context_words])
             l_avg_rr_s_context = l_avg_rr_s_words_context
 
-        # concats not relevant here, was just frames, sentiment etc for other task.
-            
-            
-        #l_avg_rr_s_context = lasagne.layers.ConcatLayer(concats, axis=-1)
-
-        # TODO
-        # add highway ?
-        #add MLP
-        #if highway:
-        #    l_avg_rr_s_context = HighwayLayer(l_avg_rr_s_context, num_units=l_avg_rr_s_context.output_shape[-1],
-        #                              nonlinearity=lasagne.nonlinearities.rectify,
-        #                              num_leading_axes=2)
-        #    
         l_lstm_rr_s_context = lasagne.layers.LSTMLayer(l_avg_rr_s_context, num_hidden,
                                                nonlinearity=lasagne.nonlinearities.tanh,
                                                grad_clipping=grad_clip,
                                                mask_input=l_mask_context_sents)
         
-        if interaction:
-            #l_hid_context = l_lstm_rr_s_context
-            if separate_attention_context:
-                print("separate attention context\n")
-                l_attn_rr_s_context = AttentionSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents], num_hidden)        
-                l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_attn_rr_s_context])
-                print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
-            else:
-                print("just averaged context without attention\n")
-                l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents])
-                print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
+        #if interaction:
+        #    #l_hid_context = l_lstm_rr_s_context
+        #    if separate_attention_context:
+        #        print("separate attention context\n")
+        #        l_attn_rr_s_context = AttentionSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents], num_hidden)        
+        #        l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_attn_rr_s_context])
+        #        print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
+        #    else:
+        #        print("just averaged context without attention\n")
+        #        l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents])
+        #        print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
 
-            l_hid_context = l_lstm_rr_avg_context
-            print("interaction\n")
+        #    l_hid_context = l_lstm_rr_avg_context
+        #    print("interaction\n")
+        #else:
+        #    print("no interaction!!! \n")
+        #    #LSTM w/ attn
+        #    #now B x D
+        #    if separate_attention_context:
+        #        print("separate attention context\n")
+        #        l_attn_rr_s_context = AttentionSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents], num_hidden)        
+        #        l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_attn_rr_s_context])
+        #        print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
+        #    else:
+        #        print("just averaged context without attention\n")
+        #        l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents])
+        #        print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
+
+        #    l_hid_context = l_lstm_rr_avg_context
+        if separate_attention_context:
+            print("yayyy\n")
+            print("separate attention context\n")
+            l_attn_rr_s_context = AttentionSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents], num_hidden)        
+            l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_attn_rr_s_context])
+            print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
         else:
-            print("no interaction!!! \n")
-            #LSTM w/ attn
-            #now B x D
-            if separate_attention_context:
-                print("separate attention context\n")
-                l_attn_rr_s_context = AttentionSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents], num_hidden)        
-                l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_attn_rr_s_context])
-                print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
-            else:
-                print("just averaged context without attention\n")
-                l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents])
-                print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
+            print("just averaged context without attention\n")
+            l_lstm_rr_avg_context = WeightedAverageSentenceLayer([l_lstm_rr_s_context, l_mask_context_sents])
+            print(" attention weighted average sentence layer shape: {}\n".format(get_output_shape(l_lstm_rr_avg_context)))
 
-            l_hid_context = l_lstm_rr_avg_context
+        l_hid_context = l_lstm_rr_avg_context
 
-        # TODO 
-        # change inputs, function calls
-        #idxs_context, mask_context_words, mask_context_sents
                 
         #now use this as an input to an LSTM
         l_idxs_response = lasagne.layers.InputLayer(shape=(None, max_post_len, max_sent_len),
@@ -318,8 +315,8 @@ class SarcasmLstmAttentionSeparate:
         if interaction:
             l_concat = l_hid_response
         else:
-            #l_concat = lasagne.layers.ConcatLayer([l_hid_context,l_hid_response])
-            l_concat = l_hid_response
+            l_concat = lasagne.layers.ConcatLayer([l_hid_context,l_hid_response])
+            #l_concat = l_hid_response
 
         l_concat = lasagne.layers.DropoutLayer(l_concat,p=0.5)
         network = lasagne.layers.DenseLayer(
@@ -360,10 +357,11 @@ class SarcasmLstmAttentionSeparate:
         self.pred = theano.function(inputs = [idxs_context, mask_context_words, mask_context_sents, idxs_response, mask_response_words, mask_response_sents],outputs = preds,allow_input_downcast=True,on_unused_input='warn')
         if separate_attention_response:
             sentence_attention = lasagne.layers.get_output(l_attn_rr_s_response)
+            sentence_attention_context = lasagne.layers.get_output(l_attn_rr_s_context)
             #if add_biases:
             #    inputs = inputs[:-1]
             self.sentence_attention_response = theano.function([idxs_context, mask_context_words, mask_context_sents,idxs_response, mask_response_words, mask_response_sents],
-                                                      sentence_attention,
+                                                      [sentence_attention, sentence_attention_context, preds],
                                                       allow_input_downcast=True,
                                                       on_unused_input='warn')
         if separate_attention_context:

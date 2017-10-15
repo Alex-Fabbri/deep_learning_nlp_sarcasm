@@ -16,9 +16,9 @@ both=False
 topSim=False
 lastSent=False
 # separate=True is used for the stacked lstms, uses full context if topSim=False and lastSent=False
-separate=False
-separate_attention_context=False
-separate_attention_response=False
+separate=True
+separate_attention_context=True
+separate_attention_response=True
 separate_attention_context_words=False
 separate_attention_response_words=False
 interaction=False

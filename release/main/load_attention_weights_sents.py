@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     with open("attention_output.txt", "w") as output:
         for i in range(test_sentence_context.shape[0]):
-            output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], context_lens[i], context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_lens[i], response_texts[i] , str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')))
+            output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], context_lens[i], context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_lens[i], response_texts[i] , str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')))
             #print("example: {} \n".format(i))
             #print("gold label: {} \n".format(test_y[i]))
             #print("predicted label: {} \n".format(preds[i]))

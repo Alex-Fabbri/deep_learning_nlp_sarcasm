@@ -32,8 +32,8 @@ if __name__ == "__main__":
     with np.load(filename) as f:
         param_values = [f['arr_%d' % i] for i in range(len(f.files))]
     attention_classifier.set_params(param_values)
-    test_sentence_attention = attention_classifier.sentence_attention_response(*testing)
-    test_sentence_context,preds = attention_classifier.sentence_attention_context(*testing)
+    test_sentence_attention, test_sentence_context, preds = attention_classifier.sentence_attention_response(*testing)
+    #test_sentence_context,preds = attention_classifier.sentence_attention_context(*testing)
     #sentence_attention_response_words1 = attention_classifier.sentence_attention_response_words(*testing)
     #sentence_attention_context_words1 = attention_classifier.sentence_attention_context_words(*testing)
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
         response_texts.append(response_sents)
     with open("attention_output.txt", "w") as output:
         for i in range(test_sentence_context.shape[0]):
-            output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], context_lens[i],context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), context_words[i],response_lens[i],response_texts[i], str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_words[i],))
+            output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], context_lens[i],context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_lens[i],response_texts[i], str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')))
 
         #for i in range(test_sentence_context.shape[0]):
         #    output.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(i, test_y[i], preds[i], context_lens[i],context_texts[i], str(test_sentence_context[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), context_words[i],response_lens[i],response_texts[i], str(test_sentence_attention[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' '), response_words[i],str(sentence_attention_response_words1[i]).strip().replace('\n',' ').replace('\r',' ').replace('\t',' ')))

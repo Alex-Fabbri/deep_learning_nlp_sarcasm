@@ -1,5 +1,5 @@
 [PropertySection]
-#input=../preprocessing/input/
+##input=../preprocessing/input/
 input=data_final/type2/
 output=../preprocessing/output/
 vocab_file=../preprocessing/input/sarcasm_v2_tab.txt
